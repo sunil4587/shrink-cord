@@ -7,6 +7,12 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-green.svg?style=flat-square)](LICENSE)
 [![Privacy](https://img.shields.io/badge/Privacy-100%25%20Local-success?style=flat-square)](#privacy--security)
 
+<br/>
+
+<p align="center">
+  <img src="assets/preview.png" alt="ShrinkCord Modal Interface" width="580" style="border-radius: 12px; box-shadow: 0 16px 40px rgba(0,0,0,0.6);" />
+</p>
+
 ---
 
 ## 😤 The Problem

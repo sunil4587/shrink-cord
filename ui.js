@@ -123,8 +123,8 @@
 
     #dshrink-modal-root .dshrink-hero-logo-box {
       position: relative;
-      width: 86px;
-      height: 86px;
+      width: 108px;
+      height: 82px;
       margin: 0 auto 12px auto;
       display: flex;
       align-items: center;
@@ -134,19 +134,19 @@
     #dshrink-modal-root .dshrink-hero-logo-box::before {
       content: "";
       position: absolute;
-      inset: -14px;
-      background: radial-gradient(circle, rgba(168, 85, 247, 0.38) 0%, rgba(88, 101, 242, 0.18) 55%, transparent 75%);
+      inset: -16px -22px;
+      background: radial-gradient(ellipse 70% 70% at 50% 50%, rgba(168, 85, 247, 0.45) 0%, rgba(88, 101, 242, 0.22) 55%, transparent 75%);
       border-radius: 50%;
       pointer-events: none;
-      filter: blur(10px);
+      filter: blur(12px);
     }
 
     #dshrink-modal-root .dshrink-hero-logo {
       position: relative;
-      width: 78px;
-      height: 78px;
+      width: 104px;
+      height: 76px;
       object-fit: contain;
-      filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.45));
+      filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.5));
     }
 
     #dshrink-modal-root .dshrink-badge {

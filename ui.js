@@ -212,7 +212,7 @@
       background: #232428;
       border: 1px solid rgba(255, 255, 255, 0.06);
       border-radius: 8px;
-      padding: 10px 14px;
+      padding: 12px 14px;
       display: flex;
       align-items: center;
       gap: 12px;
@@ -221,7 +221,7 @@
 
     #dshrink-modal-root .dshrink-thumb-box {
       width: 44px;
-      height: 34px;
+      height: 38px;
       background: #1e1f22;
       border-radius: 6px;
       display: flex;
@@ -248,9 +248,10 @@
     #dshrink-modal-root .dshrink-file-details {
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 6px;
       min-width: 0;
       flex: 1;
+      justify-content: center;
     }
 
     #dshrink-modal-root .dshrink-filename {
@@ -258,6 +259,7 @@
       font-weight: 600;
       color: #f2f3f5;
       letter-spacing: -0.01em;
+      line-height: 1.35;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -266,10 +268,11 @@
     #dshrink-modal-root .dshrink-file-meta {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 7px;
       font-size: 12px;
       color: #949ba4;
       font-weight: 500;
+      line-height: 1.3;
     }
 
     #dshrink-modal-root .dshrink-meta-item {

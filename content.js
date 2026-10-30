@@ -428,48 +428,69 @@
     if (!file) return false;
     if (file.type && file.type.startsWith("video/")) return true;
     const name = file.name ? file.name.toLowerCase() : "";
-    return /\.(mp4|mov|mkv|webm|avi|flv|wmv|m4v|3gp)$/i.test(name);
+    return /\.(mp4|mov|mkv|webm|avi|flv|wmv|m4v|3gp|m4p|mpg|mpeg)$/i.test(name);
   }
 
-  function handleIncomingFiles(fileList, eventToCancel) {
-    if (!fileList || fileList.length === 0) return false;
-    const file = fileList[0];
+  function interceptEvent(e) {
+    let files = null;
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      files = e.dataTransfer.files;
+    } else if (e.clipboardData && e.clipboardData.files && e.clipboardData.files.length > 0) {
+      files = e.clipboardData.files;
+    } else if (e.target && e.target.type === "file" && e.target.files && e.target.files.length > 0) {
+      files = e.target.files;
+    }
 
-    if (isVideoFile(file) && file.size > DISCORD_LIMIT_BYTES) {
-      if (eventToCancel) {
-        eventToCancel.preventDefault();
-        eventToCancel.stopPropagation();
+    if (files) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (isVideoFile(file) && file.size > DISCORD_LIMIT_BYTES) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          if (e.target && e.target.type === "file") {
+            try { e.target.value = ""; } catch (err) {}
+          }
+          openShrinkModal(file);
+          return true;
+        }
       }
-      openShrinkModal(file);
-      return true;
     }
     return false;
   }
 
-  // Intercept drop events on Discord
-  ["dragenter", "dragover"].forEach((evt) => {
-    window.addEventListener(evt, (e) => e.preventDefault(), true);
+  // Intercept at both window and document levels with capture phase & stopImmediatePropagation
+  [window, document].forEach((target) => {
+    target.addEventListener("drop", interceptEvent, { capture: true, passive: false });
+    target.addEventListener("paste", interceptEvent, { capture: true, passive: false });
+    target.addEventListener("change", interceptEvent, { capture: true, passive: false });
+    target.addEventListener("dragover", (e) => {
+      e.preventDefault();
+    }, { capture: true, passive: false });
+    target.addEventListener("dragenter", (e) => {
+      e.preventDefault();
+    }, { capture: true, passive: false });
   });
 
-  window.addEventListener("drop", (e) => {
-    if (e.dataTransfer && e.dataTransfer.files) {
-      handleIncomingFiles(e.dataTransfer.files, e);
-    }
-  }, true);
-
-  window.addEventListener("paste", (e) => {
-    if (e.clipboardData && e.clipboardData.files) {
-      handleIncomingFiles(e.clipboardData.files, e);
-    }
-  }, true);
-
-  document.addEventListener("change", (e) => {
-    if (e.target && e.target.type === "file" && e.target.files) {
-      if (handleIncomingFiles(e.target.files, e)) {
-        e.target.value = "";
+  // Fail-Safe: Automatically dismiss Discord's native Nitro paywall modal if it ever appears
+  const nitroShield = new MutationObserver(() => {
+    const dialogs = document.querySelectorAll('[role="dialog"], [class*="modal-"], [class*="layer-"]');
+    dialogs.forEach((dialog) => {
+      const text = dialog.textContent || "";
+      if (text.includes("exceeds the size limit") || text.includes("max file size is 20MB")) {
+        const closeBtn = dialog.querySelector('button[aria-label="Close"], [class*="closeButton"], [class*="close-"]');
+        if (closeBtn) {
+          closeBtn.click();
+        } else {
+          dialog.remove();
+        }
       }
-    }
-  }, true);
+    });
+  });
+
+  try {
+    nitroShield.observe(document.body, { childList: true, subtree: true });
+  } catch (err) {}
 
   function openShrinkModal(originalFile) {
     if (activeModalHost) {

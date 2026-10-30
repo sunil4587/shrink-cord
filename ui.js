@@ -305,23 +305,22 @@
       gap: 4px;
       font-size: 10.5px;
       font-weight: 700;
-      color: #ffffff;
-      background: #da373c;
-      border: none;
-      padding: 2px 7px;
+      color: #f0b232;
+      background: rgba(240, 178, 50, 0.12);
+      border: 1px solid rgba(240, 178, 50, 0.28);
+      padding: 2px 8px;
       border-radius: 999px;
-      letter-spacing: 0.03em;
+      letter-spacing: 0.02em;
       white-space: nowrap;
       flex-shrink: 0;
       line-height: 1.2;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     }
 
     #dshrink-modal-root .dshrink-overlimit-badge svg {
       width: 11px;
       height: 11px;
       flex-shrink: 0;
-      fill: #ffffff;
+      fill: #f0b232;
     }
 
     /* Option Selectors */

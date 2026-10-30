@@ -63,7 +63,7 @@
 
     #dshrink-modal-root .dshrink-modal {
       position: relative;
-      background: radial-gradient(ellipse 110% 70% at 50% -10%, #321847 0%, #202225 65%, #1e1f22 100%);
+      background: radial-gradient(ellipse 110% 70% at 50% -10%, #262c66 0%, #202225 65%, #1e1f22 100%);
       color: #dbdee1;
       width: 472px;
       max-width: 92vw;
@@ -123,30 +123,20 @@
 
     #dshrink-modal-root .dshrink-hero-logo-box {
       position: relative;
-      width: 76px;
-      height: 54px;
-      margin: 8px auto;
+      width: 46px;
+      height: 46px;
+      margin: 2px auto 10px auto;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
-    #dshrink-modal-root .dshrink-hero-logo-box::before {
-      content: "";
-      position: absolute;
-      inset: -12px -16px;
-      background: radial-gradient(ellipse 70% 70% at 50% 50%, rgba(168, 85, 247, 0.45) 0%, rgba(88, 101, 242, 0.22) 55%, transparent 75%);
-      border-radius: 50%;
-      pointer-events: none;
-      filter: blur(10px);
-    }
-
     #dshrink-modal-root .dshrink-hero-logo {
       position: relative;
-      width: 72px;
-      height: 48px;
+      width: 46px;
+      height: 46px;
       object-fit: contain;
-      filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.45));
+      filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.45));
     }
 
     #dshrink-modal-root .dshrink-badge {
@@ -431,9 +421,9 @@
     #dshrink-modal-root .dshrink-progress-bar {
       width: 0%;
       height: 100%;
-      background: linear-gradient(90deg, #5865f2, #9b59b6);
+      background: linear-gradient(90deg, #5865f2, #7983f5);
       border-radius: 3px;
-      box-shadow: 0 0 10px rgba(155, 89, 182, 0.5);
+      box-shadow: 0 0 10px rgba(88, 101, 242, 0.55);
       transition: width 0.15s ease;
     }
 
@@ -486,14 +476,14 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      box-shadow: 0 0 18px rgba(168, 85, 247, 0.45), 0 0 32px rgba(88, 101, 242, 0.35);
+      box-shadow: 0 0 18px rgba(104, 117, 245, 0.45), 0 0 32px rgba(88, 101, 242, 0.35);
       transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
       user-select: none;
     }
 
     #dshrink-modal-root .dshrink-btn-primary:hover {
       background: #f2f3f5;
-      box-shadow: 0 0 24px rgba(168, 85, 247, 0.65), 0 0 42px rgba(88, 101, 242, 0.5);
+      box-shadow: 0 0 24px rgba(104, 117, 245, 0.65), 0 0 42px rgba(88, 101, 242, 0.5);
       transform: translateY(-1px);
     }
 

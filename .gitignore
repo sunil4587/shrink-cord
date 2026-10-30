@@ -1,0 +1,12 @@
+# Build outputs
+*.zip
+*.tar.gz
+dist/
+build/
+
+# OS / Editor artifacts
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/

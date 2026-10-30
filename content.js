@@ -58,58 +58,68 @@
 
     const isAudio = Compressor.isAudioFile(file);
 
-    activeModal = UI.openModal(file, {
-      onStart: (options) => {
-        const callbacks = {
-          onProgress: (percent, status, subtext) => {
-            activeModal.updateProgress(percent, status, subtext);
-          },
-          onComplete: (compressedBlob) => {
-            activeModal.complete(compressedBlob);
-            attachToDiscord(compressedBlob, file.name, isAudio);
-            activeCleanup = null;
-            activeModal = null;
-          },
-          onError: (err) => {
-            activeModal.error(err);
-            activeCleanup = null;
-          }
-        };
+    function launch(defaults = {}) {
+      activeModal = UI.openModal(file, {
+        onStart: (options) => {
+          const callbacks = {
+            onProgress: (percent, status, subtext) => {
+              activeModal.updateProgress(percent, status, subtext);
+            },
+            onComplete: (compressedBlob) => {
+              activeModal.complete(compressedBlob);
+              attachToDiscord(compressedBlob, file.name, isAudio);
+              activeCleanup = null;
+              activeModal = null;
+            },
+            onError: (err) => {
+              activeModal.error(err);
+              activeCleanup = null;
+            }
+          };
 
-        if (isAudio) {
-          let maxDuration = 0;
-          if (options.mediaDuration > 0 && options.clip !== "full") {
-            maxDuration = Math.min(parseFloat(options.clip), options.mediaDuration);
+          if (isAudio) {
+            let maxDuration = 0;
+            if (options.mediaDuration > 0 && options.clip !== "full") {
+              maxDuration = Math.min(parseFloat(options.clip), options.mediaDuration);
+            }
+            activeCleanup = Compressor.compressAudio(
+              file,
+              options.targetMB,
+              options.quality,
+              maxDuration,
+              callbacks
+            );
+          } else {
+            let maxDuration = 60;
+            if (options.mediaDuration > 0) {
+              maxDuration = options.clip === "full" ? options.mediaDuration : Math.min(parseFloat(options.clip), options.mediaDuration);
+            }
+            activeCleanup = Compressor.compressVideo(
+              file,
+              options.targetMB,
+              options.quality,
+              maxDuration,
+              callbacks
+            );
           }
-          activeCleanup = Compressor.compressAudio(
-            file,
-            options.targetMB,
-            options.quality,
-            maxDuration,
-            callbacks
-          );
-        } else {
-          let maxDuration = 60;
-          if (options.mediaDuration > 0) {
-            maxDuration = options.clip === "full" ? options.mediaDuration : Math.min(parseFloat(options.clip), options.mediaDuration);
+        },
+        onCancel: () => {
+          if (activeCleanup) {
+            activeCleanup();
+            activeCleanup = null;
           }
-          activeCleanup = Compressor.compressVideo(
-            file,
-            options.targetMB,
-            options.quality,
-            maxDuration,
-            callbacks
-          );
+          activeModal = null;
         }
-      },
-      onCancel: () => {
-        if (activeCleanup) {
-          activeCleanup();
-          activeCleanup = null;
-        }
-        activeModal = null;
-      }
-    });
+      }, defaults);
+    }
+
+    if (chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get(["targetMB", "quality"], (saved) => {
+        launch(saved || {});
+      });
+    } else {
+      launch();
+    }
   }
 
   /**
@@ -156,6 +166,10 @@
   const nitroShield = new MutationObserver(() => {
     const dialogs = document.querySelectorAll('[role="dialog"], [class*="modal-"], [class*="layer-"]');
     dialogs.forEach((dialog) => {
+      // Guard against our own modal
+      if (dialog.closest("#dshrink-modal-root") || dialog.id === "dshrink-modal-root" || dialog.classList.contains("dshrink-modal")) {
+        return;
+      }
       const text = dialog.textContent || "";
       if (text.includes("exceeds the size limit") || text.includes("max file size is 20MB")) {
         const closeBtn = dialog.querySelector('button[aria-label="Close"], [class*="closeButton"], [class*="close-"]');

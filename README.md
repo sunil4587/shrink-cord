@@ -1,6 +1,6 @@
 # ⚡ DiscordShrink
 
-> **Automatically catch oversized videos on Discord Web and shrink them under 25MB right in your browser.**  
+> **Automatically catch oversized videos and audio on Discord Web and shrink them under 20MB right in your browser.**  
 > *100% Client-Side • Zero Cloud Uploads • Open Source (GPLv3) • Zero Telemetry*
 
 [![Manifest V3](https://img.shields.io/badge/Chrome%20Extension-Manifest%20V3-blue?style=flat-square)](https://developer.chrome.com/docs/extensions/mv3/intro/)
@@ -10,19 +10,15 @@
 ---
 
 ## 😤 The Problem
-You record a quick 45-second gaming clip or screen recording on your computer (**68MB**). You drag it into Discord, only to be slapped with the annoying red error:
-> ❌ **"Your file is too powerful! Max file size is 25.00 MiB."**
-
-You are forced to open a shady third-party website, wait for slow uploads, watch scam ads, download the converted file, and drag it back into Discord.
+You record a gaming clip or audio track on your computer. You drag it into Discord, only to be slapped with the paywall:
+> ❌ **"Uh oh, this file exceeds the size limit. The max file size is 20MB."**
 
 ## ⚡ The Solution
-**DiscordShrink** silently watches for video drop and paste events on `discord.com`. 
-
-When you drop or paste any video larger than 25MB:
-1. **It catches the file instantly** before Discord throws an error.
-2. A sleek, Discord-native modal pops up asking if you want to auto-shrink to **24MB**.
-3. It compresses the video **locally in your browser** using WebAssembly.
-4. It **automatically attaches** the clean, 24MB video back into your Discord message box ready to send!
+**DiscordShrink** silently intercepts media drop and paste events on `discord.com`:
+1. **Catches oversized media instantly** before Discord triggers the Nitro paywall.
+2. A 1:1 Discord Nitro-style modal allows shrinking to **19MB** with custom presets.
+3. Compresses video and audio **locally in your browser** at hardware speeds.
+4. **Automatically attaches** the compressed file back into your Discord message box ready to send!
 
 ---
 

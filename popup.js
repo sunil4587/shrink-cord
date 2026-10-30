@@ -1,23 +1,27 @@
-// DiscordShrink - Popup Settings Logic
+/**
+ * DiscordShrink - Popup Settings Logic
+ */
 
 document.addEventListener("DOMContentLoaded", function () {
-  const defaultTarget = document.getElementById("default-target");
-  const defaultResolution = document.getElementById("default-resolution");
+  const defaultSize = document.getElementById("default-size");
+  const defaultQuality = document.getElementById("default-quality");
 
-  // Load saved user preferences
   if (chrome.storage && chrome.storage.local) {
-    chrome.storage.local.get(["targetMB", "resolution"], function (items) {
-      if (items.targetMB) defaultTarget.value = items.targetMB;
-      if (items.resolution) defaultResolution.value = items.resolution;
+    chrome.storage.local.get(["targetMB", "quality"], function (items) {
+      if (items.targetMB && defaultSize) defaultSize.value = items.targetMB;
+      if (items.quality && defaultQuality) defaultQuality.value = items.quality;
     });
 
-    // Save changes automatically
-    defaultTarget.addEventListener("change", function () {
-      chrome.storage.local.set({ targetMB: defaultTarget.value });
-    });
+    if (defaultSize) {
+      defaultSize.addEventListener("change", function () {
+        chrome.storage.local.set({ targetMB: defaultSize.value });
+      });
+    }
 
-    defaultResolution.addEventListener("change", function () {
-      chrome.storage.local.set({ resolution: defaultResolution.value });
-    });
+    if (defaultQuality) {
+      defaultQuality.addEventListener("change", function () {
+        chrome.storage.local.set({ quality: defaultQuality.value });
+      });
+    }
   }
 });

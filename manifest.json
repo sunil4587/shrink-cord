@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "DiscordShrink - Auto 25MB Video Squeezer",
-  "version": "1.0.0",
-  "description": "Automatically catches oversized videos on Discord Web and compresses them under 20MB right in your browser.",
+  "name": "DiscordShrink - Auto Media Squeezer (Video & Audio)",
+  "version": "1.1.0",
+  "description": "Automatically intercepts oversized videos and audio on Discord Web (>20MB) and compresses them client-side under Discord's free limit.",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",

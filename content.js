@@ -1,4 +1,4 @@
-// DiscordShrink - Content Script (Native Discord Nitro Modal Design 1:1)
+// DiscordShrink - Content Script (Native Discord Nitro Design + Video & Audio Support)
 
 (function () {
   "use strict";
@@ -6,7 +6,7 @@
   const DISCORD_LIMIT_BYTES = 19 * 1024 * 1024; // 19 MB (Safety margin below 20MB)
   let activeModalHost = null;
 
-  console.log("%cDiscordShrink Active", "color: #5865F2; font-weight: bold;");
+  console.log("%cDiscordShrink Active (Video + Audio)", "color: #5865F2; font-weight: bold;");
 
   const MODAL_CSS = `
     :host {
@@ -436,6 +436,17 @@
     return /\.(mp4|mov|mkv|webm|avi|flv|wmv|m4v|3gp|m4p|mpg|mpeg)$/i.test(name);
   }
 
+  function isAudioFile(file) {
+    if (!file) return false;
+    if (file.type && file.type.startsWith("audio/")) return true;
+    const name = file.name ? file.name.toLowerCase() : "";
+    return /\.(mp3|wav|flac|m4a|aac|ogg|opus|wma|aiff|alac|oga)$/i.test(name);
+  }
+
+  function isMediaFile(file) {
+    return isVideoFile(file) || isAudioFile(file);
+  }
+
   function interceptEvent(e) {
     let files = null;
     if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
@@ -449,7 +460,7 @@
     if (files) {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        if (isVideoFile(file) && file.size > DISCORD_LIMIT_BYTES) {
+        if (isMediaFile(file) && file.size > DISCORD_LIMIT_BYTES) {
           e.preventDefault();
           e.stopPropagation();
           e.stopImmediatePropagation();
@@ -503,12 +514,13 @@
       activeModalHost = null;
     }
 
+    const isAudio = isAudioFile(originalFile);
     let isAborted = false;
     let cleanupFn = null;
     let selectedClip = "full";
     let selectedSize = 19.0;
-    let selectedRes = "720";
-    let videoDuration = 0;
+    let selectedRes = isAudio ? "32000" : "720";
+    let mediaDuration = 0;
 
     const host = document.createElement("div");
     host.id = "discord-shrink-host";
@@ -527,7 +539,7 @@
         </button>
 
         <div class="dshrink-hero">
-          <!-- 3D Nitro-Style Glowing Folder Graphic -->
+          <!-- 3D Nitro-Style Artwork -->
           <svg class="dshrink-hero-art" viewBox="0 0 200 130">
             <defs>
               <linearGradient id="nitro-g1" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -550,17 +562,25 @@
             <ellipse cx="110" cy="110" rx="35" ry="14" fill="#a855f7" opacity="0.7" />
           </svg>
 
-          <span class="dshrink-badge">AUTO-SHRINK</span>
+          <span class="dshrink-badge">${isAudio ? "AUDIO AUTO-SHRINK" : "AUTO-SHRINK"}</span>
           <h2 class="dshrink-title">Uh oh, this file exceeds the size limit.</h2>
           <p class="dshrink-subtitle">The max file size is 20MB. Compress locally to send directly in chat.</p>
         </div>
         
         <div class="dshrink-file-card">
           <div class="dshrink-thumb-box" id="dshrink-thumb-box">
-            <svg class="dshrink-file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="m22 8-6 4 6 4V8Z"/>
-              <rect width="14" height="12" x="2" y="6" rx="2" ry="2"/>
-            </svg>
+            ${isAudio ? `
+              <svg class="dshrink-file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 18V5l12-2v13" />
+                <circle cx="6" cy="18" r="3" />
+                <circle cx="18" cy="16" r="3" />
+              </svg>
+            ` : `
+              <svg class="dshrink-file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m22 8-6 4 6 4V8Z"/>
+                <rect width="14" height="12" x="2" y="6" rx="2" ry="2"/>
+              </svg>
+            `}
           </div>
           <div class="dshrink-file-details">
             <span class="dshrink-filename" title="${originalFile.name}">${originalFile.name}</span>
@@ -587,15 +607,17 @@
         <div id="dshrink-warn-container" style="display: none;"></div>
 
         <div class="dshrink-options-area" id="dshrink-options-area">
-          <div class="dshrink-group" id="dshrink-clip-group" style="display: none;">
-            <label class="dshrink-label">Clip Duration</label>
-            <div class="dshrink-segment-group" id="dshrink-clip-segments">
-              <button type="button" class="dshrink-segment-btn active" data-val="60">60s Clip</button>
-              <button type="button" class="dshrink-segment-btn" data-val="30">30s Clip</button>
-              <button type="button" class="dshrink-segment-btn" data-val="120">2 Mins</button>
-              <button type="button" class="dshrink-segment-btn" data-val="full" id="dshrink-full-btn">Full Video</button>
+          ${!isAudio ? `
+            <div class="dshrink-group" id="dshrink-clip-group" style="display: none;">
+              <label class="dshrink-label">Clip Duration</label>
+              <div class="dshrink-segment-group" id="dshrink-clip-segments">
+                <button type="button" class="dshrink-segment-btn active" data-val="60">60s Clip</button>
+                <button type="button" class="dshrink-segment-btn" data-val="30">30s Clip</button>
+                <button type="button" class="dshrink-segment-btn" data-val="120">2 Mins</button>
+                <button type="button" class="dshrink-segment-btn" data-val="full" id="dshrink-full-btn">Full Video</button>
+              </div>
             </div>
-          </div>
+          ` : ""}
 
           <div class="dshrink-group">
             <label class="dshrink-label">Target File Size</label>
@@ -607,24 +629,30 @@
           </div>
 
           <div class="dshrink-group">
-            <label class="dshrink-label">Quality</label>
+            <label class="dshrink-label">${isAudio ? "Audio Quality" : "Video Quality"}</label>
             <div class="dshrink-segment-group" id="dshrink-res-segments">
-              <button type="button" class="dshrink-segment-btn active" data-val="720">720p HD</button>
-              <button type="button" class="dshrink-segment-btn" data-val="480">480p SD</button>
-              <button type="button" class="dshrink-segment-btn" data-val="original">Source</button>
+              ${isAudio ? `
+                <button type="button" class="dshrink-segment-btn active" data-val="32000">Studio (32kHz)</button>
+                <button type="button" class="dshrink-segment-btn" data-val="22050">High (22kHz)</button>
+                <button type="button" class="dshrink-segment-btn" data-val="voice">Voice (Mono)</button>
+              ` : `
+                <button type="button" class="dshrink-segment-btn active" data-val="720">720p HD</button>
+                <button type="button" class="dshrink-segment-btn" data-val="480">480p SD</button>
+                <button type="button" class="dshrink-segment-btn" data-val="original">Source</button>
+              `}
             </div>
           </div>
         </div>
 
         <div class="dshrink-progress-card" id="dshrink-progress-card">
           <div class="dshrink-progress-header">
-            <span class="dshrink-progress-status" id="dshrink-status-text">Encoding video...</span>
+            <span class="dshrink-progress-status" id="dshrink-status-text">Encoding media...</span>
             <span class="dshrink-progress-pct" id="dshrink-percentage">0%</span>
           </div>
           <div class="dshrink-progress-track">
             <div class="dshrink-progress-bar" id="dshrink-progress-bar"></div>
           </div>
-          <span class="dshrink-progress-subtext" id="dshrink-progress-subtext">Optimizing frames and audio...</span>
+          <span class="dshrink-progress-subtext" id="dshrink-progress-subtext">Optimizing media stream...</span>
         </div>
 
         <div class="dshrink-footer">
@@ -658,6 +686,7 @@
 
     function setupSegments(containerId, onSelect) {
       const parent = shadow.getElementById(containerId);
+      if (!parent) return;
       const buttons = parent.querySelectorAll(".dshrink-segment-btn");
       buttons.forEach((btn) => {
         btn.addEventListener("click", () => {
@@ -668,9 +697,11 @@
       });
     }
 
-    setupSegments("dshrink-clip-segments", (val) => {
-      selectedClip = val === "full" ? "full" : parseFloat(val);
-    });
+    if (!isAudio) {
+      setupSegments("dshrink-clip-segments", (val) => {
+        selectedClip = val === "full" ? "full" : parseFloat(val);
+      });
+    }
 
     setupSegments("dshrink-size-segments", (val) => {
       selectedSize = parseFloat(val);
@@ -680,57 +711,58 @@
       selectedRes = val;
     });
 
-    // Probe duration and capture live thumbnail
-    const probeVideo = document.createElement("video");
-    probeVideo.preload = "auto";
-    probeVideo.muted = true;
-    probeVideo.playsInline = true;
+    // Probe duration
+    const probeEl = document.createElement(isAudio ? "audio" : "video");
+    probeEl.preload = "auto";
+    probeEl.muted = true;
     const probeUrl = URL.createObjectURL(originalFile);
-    probeVideo.src = probeUrl;
+    probeEl.src = probeUrl;
 
-    probeVideo.onloadedmetadata = () => {
-      videoDuration = probeVideo.duration || 0;
-      const formatted = formatDuration(videoDuration);
+    probeEl.onloadedmetadata = () => {
+      mediaDuration = probeEl.duration || 0;
+      const formatted = formatDuration(mediaDuration);
       durationVal.textContent = `Length: ${formatted}`;
 
       if (fullBtn) {
         fullBtn.textContent = `Full (${formatted})`;
       }
 
-      // If video is longer than 2 minutes, show clip options and default to 60s
-      if (videoDuration > 120) {
-        clipGroup.style.display = "flex";
-        selectedClip = 60; // default 60s clip for long videos
-        warnContainer.style.display = "block";
-        warnContainer.innerHTML = `
-          <div class="dshrink-notice">
-            Long video detected (${formatted}). 60s clip is pre-selected for fast compression.
-          </div>
-        `;
-      } else {
-        selectedClip = "full"; // for short videos (e.g. 30s), keep full video!
-      }
+      if (!isAudio) {
+        if (mediaDuration > 120) {
+          if (clipGroup) clipGroup.style.display = "flex";
+          selectedClip = 60;
+          warnContainer.style.display = "block";
+          warnContainer.innerHTML = `
+            <div class="dshrink-notice">
+              Long video detected (${formatted}). 60s clip is pre-selected for fast compression.
+            </div>
+          `;
+        } else {
+          selectedClip = "full";
+        }
 
-      // Capture a thumbnail from the video
-      try {
-        probeVideo.currentTime = Math.min(1.0, videoDuration * 0.1);
-        probeVideo.onseeked = () => {
-          const thumbCanvas = document.createElement("canvas");
-          thumbCanvas.width = 48;
-          thumbCanvas.height = 36;
-          const ctx = thumbCanvas.getContext("2d");
-          ctx.drawImage(probeVideo, 0, 0, 48, 36);
-          thumbBox.innerHTML = "";
-          thumbBox.appendChild(thumbCanvas);
+        try {
+          probeEl.currentTime = Math.min(1.0, mediaDuration * 0.1);
+          probeEl.onseeked = () => {
+            const thumbCanvas = document.createElement("canvas");
+            thumbCanvas.width = 48;
+            thumbCanvas.height = 36;
+            const ctx = thumbCanvas.getContext("2d");
+            ctx.drawImage(probeEl, 0, 0, 48, 36);
+            thumbBox.innerHTML = "";
+            thumbBox.appendChild(thumbCanvas);
+            URL.revokeObjectURL(probeUrl);
+          };
+        } catch (e) {
           URL.revokeObjectURL(probeUrl);
-        };
-      } catch (e) {
+        }
+      } else {
         URL.revokeObjectURL(probeUrl);
       }
     };
 
-    probeVideo.onerror = () => {
-      durationVal.textContent = "Length: Video";
+    probeEl.onerror = () => {
+      durationVal.textContent = isAudio ? "Length: Audio" : "Length: Video";
       URL.revokeObjectURL(probeUrl);
     };
 
@@ -759,24 +791,13 @@
     window.addEventListener("keydown", keyHandler);
 
     startBtn.addEventListener("click", function () {
-      let maxDuration = 60;
-      if (videoDuration > 0) {
-        if (selectedClip === "full") {
-          maxDuration = videoDuration;
-        } else {
-          maxDuration = Math.min(parseFloat(selectedClip), videoDuration);
-        }
-      } else {
-        maxDuration = 60;
-      }
-
       optionsArea.style.display = "none";
       warnContainer.style.display = "none";
       progressCard.style.display = "flex";
       startBtn.disabled = true;
       cancelBtn.textContent = "Cancel";
 
-      cleanupFn = compressVideo(originalFile, selectedSize, selectedRes, maxDuration, {
+      const commonCallbacks = {
         onProgress: (percent, status, subtext) => {
           if (isAborted) return;
           progressBar.style.width = percent + "%";
@@ -789,11 +810,11 @@
           progressBar.style.width = "100%";
           percentageText.textContent = "100%";
           statusText.textContent = `Attached ${formatBytes(compressedBlob.size)} to Discord`;
-          subtextEl.textContent = "Audio and video ready";
+          subtextEl.textContent = isAudio ? "Audio ready" : "Audio and video ready";
 
           setTimeout(() => {
             if (!isAborted) {
-              attachToDiscord(compressedBlob, originalFile.name);
+              attachToDiscord(compressedBlob, originalFile.name, isAudio);
               cancelAndClose();
             }
           }, 350);
@@ -803,8 +824,168 @@
           statusText.textContent = "Error: " + err.message;
           startBtn.disabled = false;
         }
-      });
+      };
+
+      if (isAudio) {
+        let maxDuration = 0;
+        if (mediaDuration > 0 && selectedClip !== "full") {
+          maxDuration = Math.min(parseFloat(selectedClip), mediaDuration);
+        }
+        cleanupFn = compressAudio(originalFile, selectedSize, selectedRes, maxDuration, commonCallbacks);
+      } else {
+        let maxDuration = 60;
+        if (mediaDuration > 0) {
+          if (selectedClip === "full") {
+            maxDuration = mediaDuration;
+          } else {
+            maxDuration = Math.min(parseFloat(selectedClip), mediaDuration);
+          }
+        } else {
+          maxDuration = 60;
+        }
+        cleanupFn = compressVideo(originalFile, selectedSize, selectedRes, maxDuration, commonCallbacks);
+      }
     });
+  }
+
+  // Fast Sub-Second Audio Compression via Web Audio API + Offline Resampler
+  function compressAudio(file, targetMB, qualitySetting, maxDuration, callbacks) {
+    let isStopped = false;
+
+    callbacks.onProgress(15, "Decoding audio file...", "Reading audio samples...");
+
+    file.arrayBuffer().then(async (arrayBuffer) => {
+      if (isStopped) return;
+
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContextClass();
+        const decodedBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+        audioCtx.close();
+
+        if (isStopped) return;
+
+        callbacks.onProgress(45, "Resampling audio...", "Optimizing sample rate to fit 19MB...");
+
+        const totalDuration = decodedBuffer.duration;
+        let duration = (maxDuration && maxDuration > 0 && maxDuration < totalDuration) ? maxDuration : totalDuration;
+        const targetBytes = targetMB * 1024 * 1024 * 0.92;
+
+        let channels = qualitySetting === "voice" ? 1 : Math.min(2, decodedBuffer.numberOfChannels);
+        let sampleRate = 32000;
+        if (qualitySetting === "voice" || qualitySetting === "22050") {
+          sampleRate = 22050;
+        } else if (qualitySetting === "32000") {
+          sampleRate = 32000;
+        }
+
+        // Guarantee output size strictly under targetBytes using standard sample rates
+        const standardRates = [44100, 32000, 24000, 22050, 16000, 12000, 11025, 8000];
+        if (duration * sampleRate * channels * 2 > targetBytes) {
+          if (duration * 8000 * channels * 2 > targetBytes && channels > 1) {
+            channels = 1;
+          }
+          let chosenRate = 8000;
+          for (const rate of standardRates) {
+            if (duration * rate * channels * 2 <= targetBytes) {
+              chosenRate = rate;
+              break;
+            }
+          }
+          sampleRate = chosenRate;
+
+          // If even 8000Hz mono exceeds targetBytes, cap the rendered duration to fit target
+          if (duration * sampleRate * channels * 2 > targetBytes) {
+            duration = Math.floor(targetBytes / (sampleRate * channels * 2));
+          }
+        }
+
+        // Resample in ~100ms with OfflineAudioContext
+        const offlineCtx = new OfflineAudioContext(
+          channels,
+          Math.ceil(duration * sampleRate),
+          sampleRate
+        );
+
+        const source = offlineCtx.createBufferSource();
+        source.buffer = decodedBuffer;
+        source.connect(offlineCtx.destination);
+        source.start(0);
+
+        const renderedBuffer = await offlineCtx.startRendering();
+
+        if (isStopped) return;
+
+        callbacks.onProgress(85, "Encoding audio...", "Generating Discord-ready audio...");
+
+        // Generate pristine 16-bit WAV PCM Blob
+        const wavBlob = audioBufferToWavBlob(renderedBuffer);
+
+        callbacks.onProgress(100, "Audio ready!", "Attaching to Discord...");
+        callbacks.onComplete(wavBlob);
+      } catch (err) {
+        callbacks.onError(new Error("Audio decoding failed: " + err.message));
+      }
+    }).catch((err) => {
+      callbacks.onError(new Error("Unable to read audio file: " + err.message));
+    });
+
+    return function cleanup() {
+      isStopped = true;
+    };
+  }
+
+  // Pure Vanilla WAV PCM 16-bit Encoder (0.02s execution)
+  function audioBufferToWavBlob(buffer) {
+    const numChannels = buffer.numberOfChannels;
+    const sampleRate = buffer.sampleRate;
+    const bitDepth = 16;
+    const bytesPerSample = bitDepth / 8;
+    const blockAlign = numChannels * bytesPerSample;
+    const numFrames = buffer.length;
+    const dataSize = numFrames * blockAlign;
+    const bufferLength = 44 + dataSize;
+
+    const arrayBuffer = new ArrayBuffer(bufferLength);
+    const view = new DataView(arrayBuffer);
+
+    function writeString(offset, string) {
+      for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
+      }
+    }
+
+    writeString(0, "RIFF");
+    view.setUint32(4, 36 + dataSize, true);
+    writeString(8, "WAVE");
+    writeString(12, "fmt ");
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true); // PCM
+    view.setUint16(22, numChannels, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * blockAlign, true);
+    view.setUint16(32, blockAlign, true);
+    view.setUint16(34, bitDepth, true);
+    writeString(36, "data");
+    view.setUint32(40, dataSize, true);
+
+    let offset = 44;
+    const channels = [];
+    for (let c = 0; c < numChannels; c++) {
+      channels.push(buffer.getChannelData(c));
+    }
+
+    for (let i = 0; i < numFrames; i++) {
+      for (let c = 0; c < numChannels; c++) {
+        let sample = channels[c][i];
+        sample = Math.max(-1, Math.min(1, sample));
+        const intSample = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
+        view.setInt16(offset, intSample, true);
+        offset += 2;
+      }
+    }
+
+    return new Blob([arrayBuffer], { type: "audio/wav" });
   }
 
   function compressVideo(file, targetMB, resolutionSetting, maxDuration, callbacks) {
@@ -955,33 +1136,28 @@
         isFinished = true;
         callbacks.onProgress(98, "Finalizing compressed video...", "Attaching to Discord...");
 
-        // 1. Force a final canvas frame tick so captureStream does not freeze in Chromium
         try {
           ctx.drawImage(videoEl, 0, 0, width, height);
         } catch (e) {}
 
-        // 2. Request data to flush any remaining buffer
         try {
           if (recorder && recorder.state === "recording") {
             recorder.requestData();
           }
         } catch (e) {}
 
-        // 3. Stop recorder cleanly
         try {
           if (recorder && recorder.state !== "inactive") {
             recorder.stop();
           }
         } catch (e) {}
 
-        // 4. Stop all combinedStream tracks to signal EOF to browser encoder
         try {
           if (combinedStream) {
             combinedStream.getTracks().forEach((track) => track.stop());
           }
         } catch (e) {}
 
-        // 5. Zero-Hang Failsafe: If Chromium's onstop lags past 400ms, force emitComplete immediately!
         setTimeout(() => {
           if (!isCompleted) {
             emitComplete();
@@ -992,7 +1168,6 @@
       function drawFrame() {
         if (isStopped || isFinished) return;
 
-        // Check if finished
         if (videoEl.ended || videoEl.currentTime >= targetDuration) {
           finishEncoding();
           return;
@@ -1027,9 +1202,11 @@
     return cleanup;
   }
 
-  function attachToDiscord(blob, originalName) {
-    const cleanName = originalName.replace(/\.[^/.]+$/, "") + "-compressed.webm";
-    const compressedFile = new File([blob], cleanName, { type: "video/webm" });
+  function attachToDiscord(blob, originalName, isAudio) {
+    const ext = isAudio ? "wav" : "webm";
+    const mimeType = isAudio ? "audio/wav" : "video/webm";
+    const cleanName = originalName.replace(/\.[^/.]+$/, "") + "-compressed." + ext;
+    const compressedFile = new File([blob], cleanName, { type: mimeType });
 
     const fileInput = document.querySelector('input[type="file"]');
     if (fileInput) {

@@ -41,7 +41,7 @@
       position: relative;
       background: #313338;
       color: #dbdee1;
-      width: 460px;
+      width: 470px;
       max-width: 92vw;
       border-radius: 5px;
       box-shadow: 0 8px 30px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.06);
@@ -110,45 +110,86 @@
       padding: 10px 12px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 10px;
+      gap: 12px;
+    }
+
+    .dshrink-thumb-box {
+      width: 44px;
+      height: 34px;
+      background: #1e1f22;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .dshrink-thumb-box canvas {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .dshrink-file-icon {
+      width: 18px;
+      height: 18px;
+      stroke: #5865f2;
+    }
+
+    .dshrink-file-details {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+      flex: 1;
     }
 
     .dshrink-filename {
-      font-size: 13px;
+      font-size: 13.5px;
       font-weight: 600;
       color: #f2f3f5;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      flex: 1;
     }
 
-    .dshrink-tags {
+    .dshrink-file-meta {
       display: flex;
       align-items: center;
       gap: 6px;
+      font-size: 12px;
+      color: #949ba4;
+    }
+
+    .dshrink-meta-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .dshrink-meta-item svg {
+      width: 13px;
+      height: 13px;
+      stroke: #949ba4;
       flex-shrink: 0;
     }
 
-    .dshrink-tag {
-      font-size: 11px;
-      font-weight: 600;
-      padding: 2px 6px;
-      border-radius: 3px;
-      letter-spacing: 0.2px;
+    .dshrink-meta-dot {
+      color: #4e5058;
     }
 
     .dshrink-tag-size {
+      font-size: 11px;
+      font-weight: 600;
       color: #f23f43;
-      background: rgba(242, 63, 67, 0.15);
+      background: rgba(242, 63, 67, 0.12);
       border: 1px solid rgba(242, 63, 67, 0.25);
-    }
-
-    .dshrink-tag-duration {
-      color: #949ba4;
-      background: #1e1f22;
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 3px 7px;
+      border-radius: 3px;
+      flex-shrink: 0;
     }
 
     .dshrink-group {
@@ -421,11 +462,33 @@
         
         <div class="dshrink-body">
           <div class="dshrink-file-row">
-            <span class="dshrink-filename" title="${originalFile.name}">${originalFile.name}</span>
-            <div class="dshrink-tags">
-              <span class="dshrink-tag dshrink-tag-duration" id="dshrink-duration-pill">Loading...</span>
-              <span class="dshrink-tag dshrink-tag-size">${formatBytes(originalFile.size)}</span>
+            <div class="dshrink-thumb-box" id="dshrink-thumb-box">
+              <svg class="dshrink-file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m22 8-6 4 6 4V8Z"/>
+                <rect width="14" height="12" x="2" y="6" rx="2" ry="2"/>
+              </svg>
             </div>
+            <div class="dshrink-file-details">
+              <span class="dshrink-filename" title="${originalFile.name}">${originalFile.name}</span>
+              <div class="dshrink-file-meta">
+                <span class="dshrink-meta-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                  <span id="dshrink-duration-val">Reading length...</span>
+                </span>
+                <span class="dshrink-meta-dot">•</span>
+                <span class="dshrink-meta-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                  </svg>
+                  ${formatBytes(originalFile.size)}
+                </span>
+              </div>
+            </div>
+            <span class="dshrink-tag-size">Over 20 MB Limit</span>
           </div>
 
           <div id="dshrink-warn-container" style="display: none;"></div>
@@ -437,7 +500,7 @@
                 <button type="button" class="dshrink-segment-btn active" data-val="60">60s Clip</button>
                 <button type="button" class="dshrink-segment-btn" data-val="30">30s Clip</button>
                 <button type="button" class="dshrink-segment-btn" data-val="120">2 Mins</button>
-                <button type="button" class="dshrink-segment-btn" data-val="full">Full Video</button>
+                <button type="button" class="dshrink-segment-btn" data-val="full" id="dshrink-full-btn">Full Video</button>
               </div>
             </div>
 
@@ -495,11 +558,12 @@
     const statusText = shadow.getElementById("dshrink-status-text");
     const percentageText = shadow.getElementById("dshrink-percentage");
     const subtextEl = shadow.getElementById("dshrink-progress-subtext");
-    const durationPill = shadow.getElementById("dshrink-duration-pill");
+    const durationVal = shadow.getElementById("dshrink-duration-val");
+    const thumbBox = shadow.getElementById("dshrink-thumb-box");
     const warnContainer = shadow.getElementById("dshrink-warn-container");
     const clipGroup = shadow.getElementById("dshrink-clip-group");
+    const fullBtn = shadow.getElementById("dshrink-full-btn");
 
-    // Segment helper
     function setupSegments(containerId, onSelect) {
       const parent = shadow.getElementById(containerId);
       const buttons = parent.querySelectorAll(".dshrink-segment-btn");
@@ -524,35 +588,57 @@
       selectedRes = val;
     });
 
-    // Probe duration
+    // Probe duration and capture live thumbnail
     const probeVideo = document.createElement("video");
-    probeVideo.preload = "metadata";
+    probeVideo.preload = "auto";
     probeVideo.muted = true;
+    probeVideo.playsInline = true;
     const probeUrl = URL.createObjectURL(originalFile);
     probeVideo.src = probeUrl;
 
     probeVideo.onloadedmetadata = () => {
       videoDuration = probeVideo.duration || 0;
-      durationPill.textContent = formatDuration(videoDuration);
-      URL.revokeObjectURL(probeUrl);
+      const formatted = formatDuration(videoDuration);
+      durationVal.textContent = `Length: ${formatted}`;
 
-      // If video is longer than 2 minutes, show clip selector by default
+      if (fullBtn) {
+        fullBtn.textContent = `Full (${formatted})`;
+      }
+
+      // If video is longer than 2 minutes, show clip options
       if (videoDuration > 120) {
         clipGroup.style.display = "flex";
-        selectedClip = 60; // 60s clip by default
+        selectedClip = 60; // default 60s
         warnContainer.style.display = "block";
         warnContainer.innerHTML = `
           <div class="dshrink-notice">
-            Long video detected (${formatDuration(videoDuration)}). Clipping to 60s is selected for fast encoding.
+            Long video detected (${formatted}). 60s clip is pre-selected for fast 15-second compression.
           </div>
         `;
       } else {
         selectedClip = videoDuration;
       }
+
+      // Try capturing a crisp thumbnail from the video
+      try {
+        probeVideo.currentTime = Math.min(1.0, videoDuration * 0.1);
+        probeVideo.onseeked = () => {
+          const thumbCanvas = document.createElement("canvas");
+          thumbCanvas.width = 44;
+          thumbCanvas.height = 34;
+          const ctx = thumbCanvas.getContext("2d");
+          ctx.drawImage(probeVideo, 0, 0, 44, 34);
+          thumbBox.innerHTML = "";
+          thumbBox.appendChild(thumbCanvas);
+          URL.revokeObjectURL(probeUrl);
+        };
+      } catch (e) {
+        URL.revokeObjectURL(probeUrl);
+      }
     };
 
     probeVideo.onerror = () => {
-      durationPill.textContent = "Video";
+      durationVal.textContent = "Length: Video";
       URL.revokeObjectURL(probeUrl);
     };
 

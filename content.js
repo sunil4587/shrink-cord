@@ -1,4 +1,4 @@
-// DiscordShrink - Content Script (Ultra-Fast Finalization, Zero Hang, Header Limit Pill)
+// DiscordShrink - Content Script (Native Discord Nitro Modal Design 1:1)
 
 (function () {
   "use strict";
@@ -32,92 +32,50 @@
     .dshrink-backdrop {
       position: fixed;
       inset: 0;
-      background-color: rgba(0, 0, 0, 0.76);
+      background-color: rgba(0, 0, 0, 0.78);
       backdrop-filter: blur(8px);
       animation: dshrink-fade 0.18s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
+    /* Exact Discord Nitro Modal Styling */
     .dshrink-modal {
       position: relative;
-      background: #313338;
+      background: radial-gradient(ellipse 100% 80% at 50% -10%, #351c4e 0%, #202225 65%, #1e1f22 100%);
       color: #dbdee1;
       width: 480px;
       max-width: 92vw;
-      border-radius: 8px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.08);
       overflow: hidden;
       display: flex;
       flex-direction: column;
       animation: dshrink-scale 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       z-index: 10;
-    }
-
-    .dshrink-header {
-      padding: 18px 20px 14px 20px;
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-    }
-
-    .dshrink-header-text {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-
-    .dshrink-header-top {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .dshrink-header-top h2 {
-      font-size: 19px;
-      font-weight: 700;
-      color: #ffffff;
-      line-height: 23px;
-      letter-spacing: -0.2px;
-    }
-
-    /* Moved Over Limit Pill cleanly to header */
-    .dshrink-header-pill {
-      font-size: 11px;
-      font-weight: 700;
-      color: #f23f43;
-      background: rgba(242, 63, 67, 0.14);
-      border: 1px solid rgba(242, 63, 67, 0.3);
-      padding: 2px 7px;
-      border-radius: 4px;
-      letter-spacing: 0.3px;
-    }
-
-    .dshrink-header-text p {
-      font-size: 13px;
-      color: #949ba4;
-      line-height: 16px;
+      padding: 28px 24px 22px 24px;
     }
 
     /* Circular Rounded Close Button */
     .dshrink-close-btn {
-      background: #2b2d31;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      color: #949ba4;
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #dbdee1;
       cursor: pointer;
-      width: 28px;
-      height: 28px;
+      width: 30px;
+      height: 30px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-      flex-shrink: 0;
-      margin-left: 12px;
+      z-index: 20;
     }
 
     .dshrink-close-btn:hover {
-      background: #3b3e45;
+      background: rgba(255, 255, 255, 0.16);
       color: #ffffff;
-      border-color: rgba(255, 255, 255, 0.16);
       transform: scale(1.06);
     }
 
@@ -131,26 +89,66 @@
       fill: currentColor;
     }
 
-    .dshrink-body {
-      padding: 0 20px 20px 20px;
+    /* Hero Center Section */
+    .dshrink-hero {
       display: flex;
       flex-direction: column;
-      gap: 15px;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 16px;
     }
 
-    .dshrink-file-row {
-      background: #2b2d31;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 6px;
-      padding: 12px 14px;
+    .dshrink-hero-art {
+      width: 140px;
+      height: 95px;
+      margin-bottom: 12px;
+      filter: drop-shadow(0 10px 20px rgba(235, 69, 158, 0.35));
+    }
+
+    .dshrink-badge {
+      background: #ffffff;
+      color: #1e1f22;
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 999px;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      margin-bottom: 8px;
+    }
+
+    .dshrink-title {
+      font-size: 21px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.2px;
+      line-height: 1.25;
+      margin-bottom: 6px;
+    }
+
+    .dshrink-subtitle {
+      font-size: 13.5px;
+      color: #b5bac1;
+      line-height: 1.45;
+      max-width: 380px;
+    }
+
+    /* File Information Card */
+    .dshrink-file-card {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 10px 14px;
       display: flex;
       align-items: center;
       gap: 12px;
+      margin-bottom: 14px;
     }
 
     .dshrink-thumb-box {
-      width: 48px;
-      height: 36px;
+      width: 44px;
+      height: 34px;
       background: #1e1f22;
       border-radius: 4px;
       display: flex;
@@ -159,7 +157,6 @@
       overflow: hidden;
       flex-shrink: 0;
       border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
     }
 
     .dshrink-thumb-box canvas {
@@ -178,7 +175,7 @@
     .dshrink-file-details {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 3px;
       min-width: 0;
       flex: 1;
     }
@@ -207,10 +204,9 @@
     }
 
     .dshrink-meta-item svg {
-      width: 13px;
-      height: 13px;
+      width: 12px;
+      height: 12px;
       stroke: #949ba4;
-      flex-shrink: 0;
     }
 
     .dshrink-meta-dot {
@@ -220,6 +216,14 @@
     .dshrink-size-val {
       color: #dbdee1;
       font-weight: 600;
+    }
+
+    /* Options Section */
+    .dshrink-options-area {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 16px;
     }
 
     .dshrink-group {
@@ -236,10 +240,9 @@
       color: #b5bac1;
     }
 
-    /* Modern Segmented Controls */
     .dshrink-segment-group {
       display: flex;
-      background: #1e1f22;
+      background: rgba(0, 0, 0, 0.35);
       border-radius: 6px;
       padding: 3px;
       gap: 3px;
@@ -248,7 +251,7 @@
 
     .dshrink-segment-btn {
       flex: 1;
-      padding: 8px 6px;
+      padding: 7px 6px;
       font-size: 12.5px;
       font-weight: 500;
       border-radius: 4px;
@@ -264,7 +267,7 @@
 
     .dshrink-segment-btn:hover {
       color: #f2f3f5;
-      background: rgba(255, 255, 255, 0.04);
+      background: rgba(255, 255, 255, 0.05);
     }
 
     .dshrink-segment-btn.active {
@@ -275,24 +278,26 @@
     }
 
     .dshrink-notice {
-      background: #2b2d31;
+      background: rgba(240, 178, 50, 0.1);
       border-left: 3px solid #f0b232;
       border-radius: 0 4px 4px 0;
-      padding: 10px 14px;
-      font-size: 12.5px;
+      padding: 8px 12px;
+      font-size: 12px;
       color: #dbdee1;
-      line-height: 17px;
+      line-height: 16px;
+      margin-bottom: 12px;
     }
 
-    /* Modern Progress Card */
+    /* Progress Card */
     .dshrink-progress-card {
       display: none;
-      background: #2b2d31;
-      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.35);
+      border-radius: 8px;
       padding: 16px;
       border: 1px solid rgba(255, 255, 255, 0.06);
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
+      margin-bottom: 16px;
     }
 
     .dshrink-progress-header {
@@ -311,7 +316,6 @@
       color: #5865f2;
       font-weight: 700;
       font-size: 13.5px;
-      font-variant-numeric: tabular-nums;
     }
 
     .dshrink-progress-track {
@@ -325,9 +329,9 @@
     .dshrink-progress-bar {
       width: 0%;
       height: 100%;
-      background: linear-gradient(90deg, #5865f2, #7983f5);
+      background: linear-gradient(90deg, #5865f2, #eb459e);
       border-radius: 3px;
-      box-shadow: 0 0 10px rgba(88, 101, 242, 0.4);
+      box-shadow: 0 0 10px rgba(235, 69, 158, 0.5);
       transition: width 0.15s ease;
     }
 
@@ -336,53 +340,54 @@
       color: #949ba4;
     }
 
+    /* Exact Nitro Modal Buttons */
     .dshrink-footer {
-      padding: 14px 20px;
-      background: #2b2d31;
       display: flex;
-      justify-content: flex-end;
       align-items: center;
-      gap: 10px;
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      gap: 12px;
     }
 
     .dshrink-btn-cancel {
-      background: transparent;
-      color: #dbdee1;
-      font-size: 14px;
-      font-weight: 500;
-      border: none;
-      cursor: pointer;
-      padding: 8px 16px;
-      border-radius: 4px;
-      transition: all 0.15s ease;
-    }
-
-    .dshrink-btn-cancel:hover {
-      background: rgba(255, 255, 255, 0.06);
-      color: #ffffff;
-    }
-
-    .dshrink-btn-primary {
-      background: #5865f2;
+      flex: 1;
+      background: #35373c;
       color: #ffffff;
       font-size: 14px;
       font-weight: 600;
       border: none;
-      border-radius: 4px;
-      height: 38px;
-      padding: 0 22px;
+      border-radius: 8px;
+      height: 44px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 8px rgba(88, 101, 242, 0.35);
-      transition: all 0.15s ease;
+      transition: background-color 0.15s ease;
+    }
+
+    .dshrink-btn-cancel:hover {
+      background: #404249;
+    }
+
+    /* Glowing Hero Button */
+    .dshrink-btn-primary {
+      flex: 1.25;
+      background: #ffffff;
+      color: #060607;
+      font-size: 14px;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      height: 44px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 0 16px rgba(88, 101, 242, 0.6), 0 0 24px rgba(235, 69, 158, 0.4);
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .dshrink-btn-primary:hover {
-      background: #4752c4;
-      box-shadow: 0 4px 14px rgba(88, 101, 242, 0.5);
+      box-shadow: 0 0 22px rgba(88, 101, 242, 0.8), 0 0 32px rgba(235, 69, 158, 0.65);
       transform: translateY(-1px);
     }
 
@@ -404,7 +409,7 @@
     }
 
     @keyframes dshrink-scale {
-      from { transform: scale(0.96); opacity: 0; }
+      from { transform: scale(0.95); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
     }
   `;
@@ -472,7 +477,7 @@
     }, { capture: true, passive: false });
   });
 
-  // Fail-Safe: Automatically dismiss Discord's native Nitro paywall modal if it ever appears
+  // Automated Nitro Paywall Shield
   const nitroShield = new MutationObserver(() => {
     const dialogs = document.querySelectorAll('[role="dialog"], [class*="modal-"], [class*="layer-"]');
     dialogs.forEach((dialog) => {
@@ -517,97 +522,115 @@
     container.innerHTML = `
       <div class="dshrink-backdrop" id="dshrink-backdrop"></div>
       <div class="dshrink-modal" role="dialog" aria-modal="true">
-        <div class="dshrink-header">
-          <div class="dshrink-header-text">
-            <div class="dshrink-header-top">
-              <h2>Compress Video</h2>
-              <span class="dshrink-header-pill">Over 20 MB Limit</span>
-            </div>
-            <p>Fits Discord's 20MB limit without Nitro</p>
-          </div>
-          <button class="dshrink-close-btn" id="dshrink-close-x" aria-label="Close" title="Close">
-            <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-          </button>
+        <button class="dshrink-close-btn" id="dshrink-close-x" aria-label="Close" title="Close">
+          <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+
+        <div class="dshrink-hero">
+          <!-- 3D Nitro-Style Glowing Folder Graphic -->
+          <svg class="dshrink-hero-art" viewBox="0 0 200 130">
+            <defs>
+              <linearGradient id="nitro-g1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#5865F2" />
+                <stop offset="50%" stop-color="#eb459e" />
+                <stop offset="100%" stop-color="#00d4ff" />
+              </linearGradient>
+              <linearGradient id="cloud-g" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#a855f7" />
+                <stop offset="100%" stop-color="#ec4899" />
+              </linearGradient>
+            </defs>
+            <polygon points="50,45 130,10 160,35 90,75" fill="#2c1f4a" opacity="0.85" />
+            <polygon points="70,30 145,5 125,100 50,115" fill="#1e1533" stroke="url(#nitro-g1)" stroke-width="2.5" />
+            <polygon points="75,34 140,12 122,95 57,108" fill="url(#nitro-g1)" opacity="0.9" />
+            <polygon points="98,38 114,32 108,55 116,52 95,85 98,62 90,65" fill="#ffffff" />
+            <polygon points="40,95 115,80 135,115 60,125" fill="#2b1a4a" opacity="0.8" />
+            <ellipse cx="60" cy="100" rx="30" ry="12" fill="url(#cloud-g)" opacity="0.6" />
+            <ellipse cx="140" cy="85" rx="26" ry="10" fill="url(#cloud-g)" opacity="0.5" />
+            <ellipse cx="110" cy="110" rx="35" ry="14" fill="#a855f7" opacity="0.7" />
+          </svg>
+
+          <span class="dshrink-badge">AUTO-SHRINK</span>
+          <h2 class="dshrink-title">Uh oh, this file exceeds the size limit.</h2>
+          <p class="dshrink-subtitle">The max file size is 20MB. Compress locally to send directly in chat.</p>
         </div>
         
-        <div class="dshrink-body">
-          <div class="dshrink-file-row">
-            <div class="dshrink-thumb-box" id="dshrink-thumb-box">
-              <svg class="dshrink-file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m22 8-6 4 6 4V8Z"/>
-                <rect width="14" height="12" x="2" y="6" rx="2" ry="2"/>
-              </svg>
+        <div class="dshrink-file-card">
+          <div class="dshrink-thumb-box" id="dshrink-thumb-box">
+            <svg class="dshrink-file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m22 8-6 4 6 4V8Z"/>
+              <rect width="14" height="12" x="2" y="6" rx="2" ry="2"/>
+            </svg>
+          </div>
+          <div class="dshrink-file-details">
+            <span class="dshrink-filename" title="${originalFile.name}">${originalFile.name}</span>
+            <div class="dshrink-file-meta">
+              <span class="dshrink-meta-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <span id="dshrink-duration-val">Reading length...</span>
+              </span>
+              <span class="dshrink-meta-dot">•</span>
+              <span class="dshrink-meta-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <strong class="dshrink-size-val">${formatBytes(originalFile.size)}</strong>
+              </span>
             </div>
-            <div class="dshrink-file-details">
-              <span class="dshrink-filename" title="${originalFile.name}">${originalFile.name}</span>
-              <div class="dshrink-file-meta">
-                <span class="dshrink-meta-item">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"/>
-                    <polyline points="12 6 12 12 16 14"/>
-                  </svg>
-                  <span id="dshrink-duration-val">Reading length...</span>
-                </span>
-                <span class="dshrink-meta-dot">•</span>
-                <span class="dshrink-meta-item">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                  </svg>
-                  <strong class="dshrink-size-val">${formatBytes(originalFile.size)}</strong>
-                </span>
-              </div>
+          </div>
+        </div>
+
+        <div id="dshrink-warn-container" style="display: none;"></div>
+
+        <div class="dshrink-options-area" id="dshrink-options-area">
+          <div class="dshrink-group" id="dshrink-clip-group" style="display: none;">
+            <label class="dshrink-label">Clip Duration</label>
+            <div class="dshrink-segment-group" id="dshrink-clip-segments">
+              <button type="button" class="dshrink-segment-btn active" data-val="60">60s Clip</button>
+              <button type="button" class="dshrink-segment-btn" data-val="30">30s Clip</button>
+              <button type="button" class="dshrink-segment-btn" data-val="120">2 Mins</button>
+              <button type="button" class="dshrink-segment-btn" data-val="full" id="dshrink-full-btn">Full Video</button>
             </div>
           </div>
 
-          <div id="dshrink-warn-container" style="display: none;"></div>
-
-          <div id="dshrink-options-area" style="display: flex; flex-direction: column; gap: 14px;">
-            <div class="dshrink-group" id="dshrink-clip-group" style="display: none;">
-              <label class="dshrink-label">Clip Duration</label>
-              <div class="dshrink-segment-group" id="dshrink-clip-segments">
-                <button type="button" class="dshrink-segment-btn active" data-val="60">60s Clip</button>
-                <button type="button" class="dshrink-segment-btn" data-val="30">30s Clip</button>
-                <button type="button" class="dshrink-segment-btn" data-val="120">2 Mins</button>
-                <button type="button" class="dshrink-segment-btn" data-val="full" id="dshrink-full-btn">Full Video</button>
-              </div>
-            </div>
-
-            <div class="dshrink-group">
-              <label class="dshrink-label">Target File Size</label>
-              <div class="dshrink-segment-group" id="dshrink-size-segments">
-                <button type="button" class="dshrink-segment-btn active" data-val="19.0">19 MB (Discord)</button>
-                <button type="button" class="dshrink-segment-btn" data-val="15.0">15 MB (Mobile)</button>
-                <button type="button" class="dshrink-segment-btn" data-val="8.0">8 MB (Legacy)</button>
-              </div>
-            </div>
-
-            <div class="dshrink-group">
-              <label class="dshrink-label">Quality</label>
-              <div class="dshrink-segment-group" id="dshrink-res-segments">
-                <button type="button" class="dshrink-segment-btn active" data-val="720">720p HD</button>
-                <button type="button" class="dshrink-segment-btn" data-val="480">480p SD</button>
-                <button type="button" class="dshrink-segment-btn" data-val="original">Source</button>
-              </div>
+          <div class="dshrink-group">
+            <label class="dshrink-label">Target File Size</label>
+            <div class="dshrink-segment-group" id="dshrink-size-segments">
+              <button type="button" class="dshrink-segment-btn active" data-val="19.0">19 MB (Discord)</button>
+              <button type="button" class="dshrink-segment-btn" data-val="15.0">15 MB (Mobile)</button>
+              <button type="button" class="dshrink-segment-btn" data-val="8.0">8 MB (Legacy)</button>
             </div>
           </div>
 
-          <div class="dshrink-progress-card" id="dshrink-progress-card">
-            <div class="dshrink-progress-header">
-              <span class="dshrink-progress-status" id="dshrink-status-text">Encoding video...</span>
-              <span class="dshrink-progress-pct" id="dshrink-percentage">0%</span>
+          <div class="dshrink-group">
+            <label class="dshrink-label">Quality</label>
+            <div class="dshrink-segment-group" id="dshrink-res-segments">
+              <button type="button" class="dshrink-segment-btn active" data-val="720">720p HD</button>
+              <button type="button" class="dshrink-segment-btn" data-val="480">480p SD</button>
+              <button type="button" class="dshrink-segment-btn" data-val="original">Source</button>
             </div>
-            <div class="dshrink-progress-track">
-              <div class="dshrink-progress-bar" id="dshrink-progress-bar"></div>
-            </div>
-            <span class="dshrink-progress-subtext" id="dshrink-progress-subtext">Optimizing frames and audio...</span>
           </div>
+        </div>
+
+        <div class="dshrink-progress-card" id="dshrink-progress-card">
+          <div class="dshrink-progress-header">
+            <span class="dshrink-progress-status" id="dshrink-status-text">Encoding video...</span>
+            <span class="dshrink-progress-pct" id="dshrink-percentage">0%</span>
+          </div>
+          <div class="dshrink-progress-track">
+            <div class="dshrink-progress-bar" id="dshrink-progress-bar"></div>
+          </div>
+          <span class="dshrink-progress-subtext" id="dshrink-progress-subtext">Optimizing frames and audio...</span>
         </div>
 
         <div class="dshrink-footer">
           <button class="dshrink-btn-cancel" id="dshrink-cancel-btn">Cancel</button>
           <button class="dshrink-btn-primary" id="dshrink-start-btn">
-            <span>Compress & Attach</span>
+            <span>⚡ Compress & Attach</span>
           </button>
         </div>
       </div>

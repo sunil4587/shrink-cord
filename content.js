@@ -1,13 +1,17 @@
-// DiscordShrink - Content Script (DOM Interception, Shadow DOM & Video Compressor)
+// DiscordShrink - Bulletproof Content Script
 
 (function () {
   "use strict";
 
-  const DISCORD_FREE_LIMIT_BYTES = 25 * 1024 * 1024; // 25 MB
+  // Look at Discord's real limit: Discord recently updated free limit to 20MB!
+  const DISCORD_LIMIT_BYTES = 19.5 * 1024 * 1024; // 19.5 MB Safe Trigger
   let activeModalHost = null;
+  let lastAttemptedFile = null;
+
+  console.log("⚡ DiscordShrink v1.0.0 Content Script loaded on Discord Web!");
 
   function formatBytes(bytes) {
-    if (bytes === 0) return "0 Bytes";
+    if (!bytes || bytes === 0) return "0 Bytes";
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -17,34 +21,47 @@
   function isVideoFile(file) {
     if (!file) return false;
     if (file.type && file.type.startsWith("video/")) return true;
-    const name = file.name.toLowerCase();
+    const name = file.name ? file.name.toLowerCase() : "";
     return /\.(mp4|mov|mkv|webm|avi|flv|wmv|m4v)$/i.test(name);
   }
 
-  // Intercept Drag & Drop anywhere on Discord Web
+  // 1. Intercept Drag & Drop
+  window.addEventListener(
+    "dragover",
+    function (e) {
+      // Required to allow drop interception
+      if (e.dataTransfer && e.dataTransfer.types.includes("Files")) {
+        e.preventDefault();
+      }
+    },
+    true
+  );
+
   window.addEventListener(
     "drop",
     function (event) {
       if (!event.dataTransfer || !event.dataTransfer.files || event.dataTransfer.files.length === 0) return;
       const file = event.dataTransfer.files[0];
+      lastAttemptedFile = file;
 
-      if (isVideoFile(file) && file.size > DISCORD_FREE_LIMIT_BYTES) {
+      if (isVideoFile(file) && file.size > DISCORD_LIMIT_BYTES) {
         event.preventDefault();
         event.stopPropagation();
         openShrinkModal(file);
       }
     },
-    true // Capture phase to intercept before Discord's React listeners
+    true // Capture phase
   );
 
-  // Intercept Paste events (e.g. copied video or screen recording clip)
+  // 2. Intercept Paste (e.g. copied video file or screen recording)
   window.addEventListener(
     "paste",
     function (event) {
       if (!event.clipboardData || !event.clipboardData.files || event.clipboardData.files.length === 0) return;
       const file = event.clipboardData.files[0];
+      lastAttemptedFile = file;
 
-      if (isVideoFile(file) && file.size > DISCORD_FREE_LIMIT_BYTES) {
+      if (isVideoFile(file) && file.size > DISCORD_LIMIT_BYTES) {
         event.preventDefault();
         event.stopPropagation();
         openShrinkModal(file);
@@ -53,24 +70,69 @@
     true
   );
 
+  // 3. Intercept "+" File Dialog input
+  document.addEventListener(
+    "change",
+    function (event) {
+      const target = event.target;
+      if (target && target.tagName === "INPUT" && target.type === "file" && target.files && target.files.length > 0) {
+        const file = target.files[0];
+        lastAttemptedFile = file;
+
+        if (isVideoFile(file) && file.size > DISCORD_LIMIT_BYTES) {
+          event.preventDefault();
+          event.stopPropagation();
+          target.value = ""; // Clear so Discord doesn't fire error
+          openShrinkModal(file);
+        }
+      }
+    },
+    true
+  );
+
+  // 4. FOOLPROOF FALLBACK: Watch for Discord's "exceeds size limit" Nitro popup!
+  const observer = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      for (const node of mutation.addedNodes) {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          const text = node.textContent || "";
+          if (
+            text.includes("exceeds the size limit") ||
+            text.includes("max file size is 20MB") ||
+            text.includes("max file size is 25MB")
+          ) {
+            // Found Discord's error modal! Close it automatically
+            const closeBtn = node.querySelector('[aria-label="Close"]') || node.querySelector("button");
+            if (closeBtn) closeBtn.click();
+            node.remove();
+
+            // Open our DiscordShrink modal with the last attempted file
+            if (lastAttemptedFile) {
+              openShrinkModal(lastAttemptedFile);
+            }
+          }
+        }
+      }
+    }
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+
   function openShrinkModal(originalFile) {
     if (activeModalHost) {
       activeModalHost.remove();
       activeModalHost = null;
     }
 
-    // Create custom host element and attach Shadow DOM for 100% CSS isolation
     const host = document.createElement("div");
     host.id = "discord-shrink-host";
     const shadow = host.attachShadow({ mode: "open" });
 
-    // Load styles
     const styleLink = document.createElement("link");
     styleLink.rel = "stylesheet";
     styleLink.href = chrome.runtime.getURL("styles.css");
     shadow.appendChild(styleLink);
 
-    // Modal HTML
     const container = document.createElement("div");
     container.innerHTML = `
       <div class="dshrink-backdrop" id="dshrink-backdrop"></div>
@@ -91,15 +153,15 @@
           <div class="dshrink-option-group" id="dshrink-options">
             <label class="dshrink-label">Target File Size</label>
             <select class="dshrink-select" id="dshrink-target-size">
-              <option value="23.8" selected>23.8 MB (Discord Free Safe Limit)</option>
-              <option value="15.0">15.0 MB (WhatsApp & Mobile Friendly)</option>
+              <option value="19.0" selected>19.0 MB (Discord Free Safe Limit)</option>
+              <option value="15.0">15.0 MB (WhatsApp Safe)</option>
               <option value="7.5">7.5 MB (Ultra Compact)</option>
             </select>
 
             <label class="dshrink-label" style="margin-top: 8px;">Resolution Quality</label>
             <select class="dshrink-select" id="dshrink-resolution">
-              <option value="720" selected>Auto 720p (Recommended balance)</option>
-              <option value="480">480p (Fastest encode)</option>
+              <option value="720" selected>Auto 720p (Recommended)</option>
+              <option value="480">480p (Fastest)</option>
               <option value="original">Keep Original</option>
             </select>
           </div>
@@ -128,7 +190,6 @@
     document.body.appendChild(host);
     activeModalHost = host;
 
-    // Element references
     const cancelBtn = shadow.getElementById("dshrink-cancel-btn");
     const backdrop = shadow.getElementById("dshrink-backdrop");
     const startBtn = shadow.getElementById("dshrink-start-btn");
@@ -154,7 +215,6 @@
       const targetMB = parseFloat(targetSizeSelect.value);
       const resolution = resolutionSelect.value;
 
-      // Switch to progress UI
       optionsSection.style.display = "none";
       progressContainer.style.display = "flex";
       startBtn.disabled = true;
@@ -185,9 +245,8 @@
     });
   }
 
-  // High-Speed Client-Side Video Compressor
   function compressVideo(file, targetMB, resolutionSetting, callbacks) {
-    callbacks.onProgress(5, "Reading video duration & dimensions...");
+    callbacks.onProgress(5, "Reading video metadata...");
 
     const videoEl = document.createElement("video");
     videoEl.preload = "auto";
@@ -201,7 +260,6 @@
       let width = videoEl.videoWidth || 1280;
       let height = videoEl.videoHeight || 720;
 
-      // Adjust resolution if selected
       if (resolutionSetting === "720" && height > 720) {
         width = Math.round((width * 720) / height);
         height = 720;
@@ -210,31 +268,24 @@
         height = 480;
       }
 
-      // Ensure even dimensions for codecs
       if (width % 2 !== 0) width--;
       if (height % 2 !== 0) height--;
 
-      // Calculate Target Bitrate
       const targetBytes = targetMB * 1024 * 1024;
       const totalBits = targetBytes * 8;
       const totalBitrate = Math.floor(totalBits / duration);
-      const audioBitrate = 96000; // 96 kbps
+      const audioBitrate = 96000;
       let videoBitrate = Math.floor(totalBitrate - audioBitrate);
-
-      if (videoBitrate < 120000) videoBitrate = 120000; // Min safe bitrate
+      if (videoBitrate < 120000) videoBitrate = 120000;
 
       callbacks.onProgress(15, `Encoding at ${Math.round(videoBitrate / 1000)} kbps (${width}x${height})...`);
 
-      // Canvas Transcoder Pipeline
       const canvas = document.createElement("canvas");
       canvas.width = width;
       canvas.height = height;
       const ctx = canvas.getContext("2d");
-
-      // Capture canvas stream at 30fps
       const stream = canvas.captureStream(30);
 
-      // Check supported MIME types in Chrome
       let mimeType = "video/webm;codecs=vp9,opus";
       if (!MediaRecorder.isTypeSupported(mimeType)) {
         mimeType = "video/webm;codecs=vp8,opus";
@@ -261,8 +312,6 @@
       };
 
       recorder.start(100);
-
-      // Play through video at up to 2x speed for faster encoding
       videoEl.playbackRate = 2.0;
       videoEl.play();
 
@@ -290,12 +339,10 @@
     };
   }
 
-  // Injects the compressed file back into Discord's native upload box
   function attachToDiscord(blob, originalName) {
     const cleanName = originalName.replace(/\.[^/.]+$/, "") + "-compressed.webm";
     const compressedFile = new File([blob], cleanName, { type: "video/webm" });
 
-    // 1. Look for Discord's hidden file input
     const fileInput = document.querySelector('input[type="file"]');
     if (fileInput) {
       const dataTransfer = new DataTransfer();
@@ -305,7 +352,6 @@
       return;
     }
 
-    // 2. Alternative: Dispatch synthetic drop event onto chat textbox
     const chatBox = document.querySelector('[role="textbox"]') || document.querySelector('[contenteditable="true"]');
     if (chatBox) {
       const dataTransfer = new DataTransfer();
@@ -318,6 +364,4 @@
       chatBox.dispatchEvent(dropEvent);
     }
   }
-
-  console.log("⚡ DiscordShrink v1.0.0 initialized and ready.");
 })();

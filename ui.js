@@ -779,7 +779,11 @@
         statusText.textContent = `Attached ${Compressor.formatBytes(blob.size)} to Discord`;
         subtextEl.textContent = isAudio ? "Audio ready" : "Audio and video ready";
         setTimeout(() => {
-          if (!isAborted) close();
+          if (!isAborted) {
+            isAborted = true;
+            window.removeEventListener("keydown", keyHandler);
+            root.remove();
+          }
         }, 350);
       },
       error: (err) => {

@@ -63,16 +63,22 @@
         onStart: (options) => {
           const callbacks = {
             onProgress: (percent, status, subtext) => {
-              activeModal.updateProgress(percent, status, subtext);
+              if (activeModal && typeof activeModal.updateProgress === "function") {
+                activeModal.updateProgress(percent, status, subtext);
+              }
             },
             onComplete: (compressedBlob) => {
-              activeModal.complete(compressedBlob);
+              if (activeModal && typeof activeModal.complete === "function") {
+                activeModal.complete(compressedBlob);
+              }
               attachToDiscord(compressedBlob, file.name, isAudio);
               activeCleanup = null;
               activeModal = null;
             },
             onError: (err) => {
-              activeModal.error(err);
+              if (activeModal && typeof activeModal.error === "function") {
+                activeModal.error(err);
+              }
               activeCleanup = null;
             }
           };

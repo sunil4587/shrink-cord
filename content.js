@@ -1,4 +1,4 @@
-// DiscordShrink - Content Script (Self-Contained Shadow DOM & Interception)
+// DiscordShrink - Content Script (Ultra-Polished Discord Native Design)
 
 (function () {
   "use strict";
@@ -11,7 +11,7 @@
   const MODAL_CSS = `
     :host {
       all: initial;
-      font-family: "gg sans", "Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-family: "gg sans", "Noto Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       z-index: 2147483647 !important;
       position: fixed !important;
       inset: 0 !important;
@@ -22,63 +22,137 @@
       justify-content: center !important;
       pointer-events: auto !important;
     }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     .dshrink-backdrop {
       position: fixed;
       inset: 0;
-      background-color: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(8px);
-      animation: dshrink-fade-in 0.2s ease;
+      background-color: rgba(0, 0, 0, 0.78);
+      backdrop-filter: blur(10px);
+      animation: dshrink-fade-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
+
     .dshrink-modal {
       position: relative;
-      background-color: #313338;
+      background: #313338;
       color: #dbdee1;
-      width: 90%;
-      max-width: 440px;
-      border-radius: 8px;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+      width: 100%;
+      max-width: 480px;
+      border-radius: 16px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.08);
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      animation: dshrink-scale-in 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      animation: dshrink-scale-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       z-index: 10;
     }
+
     .dshrink-header {
-      padding: 16px 20px;
-      background-color: #2b2d31;
+      padding: 22px 24px 16px 24px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+
+    .dshrink-header-left {
       display: flex;
       align-items: center;
       gap: 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     }
-    .dshrink-icon {
-      width: 28px;
-      height: 28px;
-      fill: #5865f2;
+
+    .dshrink-icon-badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(88, 101, 242, 0.25), rgba(88, 101, 242, 0.1));
+      border: 1px solid rgba(88, 101, 242, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
       flex-shrink: 0;
     }
-    .dshrink-title {
-      font-size: 16px;
+
+    .dshrink-icon-badge svg {
+      width: 22px;
+      height: 22px;
+      fill: #5865f2;
+    }
+
+    .dshrink-header-text h2 {
+      font-size: 18px;
       font-weight: 700;
       color: #ffffff;
-      margin: 0;
+      letter-spacing: -0.2px;
+      line-height: 1.2;
     }
+
+    .dshrink-header-text p {
+      font-size: 13px;
+      color: #949ba4;
+      margin-top: 3px;
+    }
+
+    .dshrink-close-btn {
+      background: transparent;
+      border: none;
+      color: #80848e;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+
+    .dshrink-close-btn:hover {
+      color: #dbdee1;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .dshrink-close-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
     .dshrink-body {
-      padding: 20px;
+      padding: 0 24px 22px 24px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 18px;
     }
-    .dshrink-file-info {
-      background-color: #2b2d31;
-      border-radius: 6px;
-      padding: 12px 14px;
+
+    .dshrink-file-card {
+      background: #2b2d31;
+      border-radius: 10px;
+      padding: 12px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border: 1px solid rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      gap: 12px;
     }
+
+    .dshrink-file-card-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .dshrink-file-card-left svg {
+      width: 20px;
+      height: 20px;
+      fill: #b5bac1;
+      flex-shrink: 0;
+    }
+
     .dshrink-filename {
       font-size: 13px;
       font-weight: 600;
@@ -86,111 +160,182 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 240px;
     }
-    .dshrink-filesize {
+
+    .dshrink-size-pill {
       font-size: 12px;
       font-weight: 700;
-      color: #fa777c;
-      background-color: rgba(250, 119, 124, 0.12);
-      padding: 3px 8px;
-      border-radius: 4px;
+      color: #f23f43;
+      background: rgba(242, 63, 67, 0.14);
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(242, 63, 67, 0.25);
+      flex-shrink: 0;
     }
-    .dshrink-option-group {
+
+    .dshrink-field {
       display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .dshrink-label {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: #b5bac1;
-    }
-    .dshrink-select {
-      background-color: #1e1f22;
-      color: #dbdee1;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 4px;
-      padding: 10px 12px;
-      font-size: 14px;
-      outline: none;
-      cursor: pointer;
-    }
-    .dshrink-select:focus {
-      border-color: #5865f2;
-    }
-    .dshrink-progress-container {
-      display: none;
       flex-direction: column;
       gap: 8px;
     }
-    .dshrink-progress-bar-bg {
+
+    .dshrink-field-label {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: #b5bac1;
+    }
+
+    .dshrink-select-wrapper {
+      position: relative;
+      width: 100%;
+    }
+
+    .dshrink-select {
+      width: 100%;
+      appearance: none;
+      -webkit-appearance: none;
+      background: #1e1f22;
+      color: #f2f3f5;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 12px 14px;
+      padding-right: 36px;
+      font-size: 14px;
+      font-weight: 500;
+      outline: none;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .dshrink-select:hover {
+      border-color: rgba(255, 255, 255, 0.16);
+    }
+
+    .dshrink-select:focus {
+      border-color: #5865f2;
+      box-shadow: 0 0 0 2px rgba(88, 101, 242, 0.25);
+    }
+
+    .dshrink-select-arrow {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      width: 14px;
+      height: 14px;
+      fill: #80848e;
+    }
+
+    .dshrink-progress-card {
+      display: none;
+      background: #2b2d31;
+      border-radius: 10px;
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .dshrink-progress-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .dshrink-progress-status {
+      color: #dbdee1;
+    }
+
+    .dshrink-progress-pct {
+      color: #23a55a;
+    }
+
+    .dshrink-progress-track {
       width: 100%;
       height: 8px;
-      background-color: #1e1f22;
-      border-radius: 4px;
+      background: #1e1f22;
+      border-radius: 999px;
       overflow: hidden;
     }
-    .dshrink-progress-bar-fill {
+
+    .dshrink-progress-bar {
       width: 0%;
       height: 100%;
       background: linear-gradient(90deg, #5865f2, #23a55a);
-      transition: width 0.2s ease;
+      border-radius: 999px;
+      transition: width 0.25s ease;
     }
-    .dshrink-progress-text {
-      font-size: 12px;
-      font-weight: 600;
-      color: #949ba4;
-      display: flex;
-      justify-content: space-between;
-    }
+
     .dshrink-footer {
-      padding: 16px 20px;
-      background-color: #2b2d31;
+      padding: 18px 24px;
+      background: #2b2d31;
       display: flex;
       justify-content: flex-end;
+      align-items: center;
       gap: 12px;
       border-top: 1px solid rgba(255, 255, 255, 0.06);
     }
-    .dshrink-btn {
-      padding: 10px 18px;
-      border-radius: 4px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      transition: background-color 0.15s ease;
-    }
+
     .dshrink-btn-cancel {
-      background-color: transparent;
-      color: #ffffff;
+      background: transparent;
+      color: #f2f3f5;
+      font-size: 14px;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      padding: 10px 18px;
+      border-radius: 8px;
+      transition: all 0.15s ease;
     }
+
     .dshrink-btn-cancel:hover {
       text-decoration: underline;
     }
+
     .dshrink-btn-primary {
-      background-color: #5865f2;
+      background: #5865f2;
       color: #ffffff;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      padding: 11px 22px;
+      cursor: pointer;
       display: flex;
       align-items: center;
       gap: 8px;
+      transition: all 0.15s ease;
+      box-shadow: 0 4px 12px rgba(88, 101, 242, 0.35);
     }
+
     .dshrink-btn-primary:hover {
-      background-color: #4752c4;
+      background: #4752c4;
+      box-shadow: 0 4px 16px rgba(88, 101, 242, 0.5);
     }
+
+    .dshrink-btn-primary:active {
+      transform: scale(0.98);
+    }
+
     .dshrink-btn-primary:disabled {
-      background-color: #35373c;
-      color: #80848e;
+      background: #35373c !important;
+      color: #80848e !important;
+      box-shadow: none !important;
       cursor: not-allowed;
+      transform: none !important;
     }
+
     @keyframes dshrink-fade-in {
       from { opacity: 0; }
       to { opacity: 1; }
     }
+
     @keyframes dshrink-scale-in {
-      from { transform: scale(0.95); opacity: 0; }
+      from { transform: scale(0.92); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
     }
   `;
@@ -210,7 +355,6 @@
     return /\.(mp4|mov|mkv|webm|avi|flv|wmv|m4v|3gp)$/i.test(name);
   }
 
-  // Intercept on BOTH window and document in capture phase
   function handleIncomingFiles(fileList, eventToCancel) {
     if (!fileList || fileList.length === 0) return false;
     const file = fileList[0];
@@ -247,7 +391,7 @@
   document.addEventListener("change", (e) => {
     if (e.target && e.target.type === "file" && e.target.files) {
       if (handleIncomingFiles(e.target.files, e)) {
-        e.target.value = ""; // clear input
+        e.target.value = "";
       }
     }
   }, true);
@@ -262,7 +406,6 @@
     host.id = "discord-shrink-host";
     const shadow = host.attachShadow({ mode: "open" });
 
-    // Inject styles directly into shadow root
     const styleEl = document.createElement("style");
     styleEl.textContent = MODAL_CSS;
     shadow.appendChild(styleEl);
@@ -272,48 +415,71 @@
       <div class="dshrink-backdrop" id="dshrink-backdrop"></div>
       <div class="dshrink-modal" role="dialog" aria-modal="true">
         <div class="dshrink-header">
-          <svg class="dshrink-icon" viewBox="0 0 24 24">
-            <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
-          </svg>
-          <h2 class="dshrink-title">DiscordShrink Video Optimizer</h2>
+          <div class="dshrink-header-left">
+            <div class="dshrink-icon-badge">
+              <svg viewBox="0 0 24 24">
+                <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+              </svg>
+            </div>
+            <div class="dshrink-header-text">
+              <h2>Optimize Video Size</h2>
+              <p>Compress locally to bypass Discord upload limit</p>
+            </div>
+          </div>
+          <button class="dshrink-close-btn" id="dshrink-close-x" aria-label="Close">
+            <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          </button>
         </div>
         
         <div class="dshrink-body">
-          <div class="dshrink-file-info">
-            <span class="dshrink-filename" title="${originalFile.name}">${originalFile.name}</span>
-            <span class="dshrink-filesize">${formatBytes(originalFile.size)} (Too Big)</span>
-          </div>
-
-          <div class="dshrink-option-group" id="dshrink-options">
-            <label class="dshrink-label">Target File Size</label>
-            <select class="dshrink-select" id="dshrink-target-size">
-              <option value="19.0" selected>19.0 MB (Discord Free Safe Limit)</option>
-              <option value="15.0">15.0 MB (WhatsApp Friendly)</option>
-              <option value="7.5">7.5 MB (Ultra Compact)</option>
-            </select>
-
-            <label class="dshrink-label" style="margin-top: 8px;">Resolution Quality</label>
-            <select class="dshrink-select" id="dshrink-resolution">
-              <option value="720" selected>Auto 720p (Recommended)</option>
-              <option value="480">480p (Fastest)</option>
-              <option value="original">Keep Original</option>
-            </select>
-          </div>
-
-          <div class="dshrink-progress-container" id="dshrink-progress-container">
-            <div class="dshrink-progress-bar-bg">
-              <div class="dshrink-progress-bar-fill" id="dshrink-progress-bar"></div>
+          <div class="dshrink-file-card">
+            <div class="dshrink-file-card-left">
+              <svg viewBox="0 0 24 24"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg>
+              <span class="dshrink-filename" title="${originalFile.name}">${originalFile.name}</span>
             </div>
-            <div class="dshrink-progress-text">
-              <span id="dshrink-status-text">Analyzing video...</span>
-              <span id="dshrink-percentage">0%</span>
+            <span class="dshrink-size-pill">${formatBytes(originalFile.size)}</span>
+          </div>
+
+          <div id="dshrink-options-area" style="display: flex; flex-direction: column; gap: 14px;">
+            <div class="dshrink-field">
+              <label class="dshrink-field-label">Target File Size</label>
+              <div class="dshrink-select-wrapper">
+                <select class="dshrink-select" id="dshrink-target-size">
+                  <option value="19.0" selected>19.0 MB — Discord Safe Limit (Guaranteed)</option>
+                  <option value="15.0">15.0 MB — WhatsApp & Mobile Safe</option>
+                  <option value="7.5">7.5 MB — Ultra-Fast / Low Bandwidth</option>
+                </select>
+                <svg class="dshrink-select-arrow" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+              </div>
+            </div>
+
+            <div class="dshrink-field">
+              <label class="dshrink-field-label">Video Quality</label>
+              <div class="dshrink-select-wrapper">
+                <select class="dshrink-select" id="dshrink-resolution">
+                  <option value="720" selected>720p HD (Best balance of speed & quality)</option>
+                  <option value="480">480p SD (Fastest encode)</option>
+                  <option value="original">Original Resolution</option>
+                </select>
+                <svg class="dshrink-select-arrow" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="dshrink-progress-card" id="dshrink-progress-card">
+            <div class="dshrink-progress-header">
+              <span class="dshrink-progress-status" id="dshrink-status-text">Analyzing video...</span>
+              <span class="dshrink-progress-pct" id="dshrink-percentage">0%</span>
+            </div>
+            <div class="dshrink-progress-track">
+              <div class="dshrink-progress-bar" id="dshrink-progress-bar"></div>
             </div>
           </div>
         </div>
 
         <div class="dshrink-footer">
-          <button class="dshrink-btn dshrink-btn-cancel" id="dshrink-cancel-btn">Cancel</button>
-          <button class="dshrink-btn dshrink-btn-primary" id="dshrink-start-btn">
+          <button class="dshrink-btn-cancel" id="dshrink-cancel-btn">Cancel</button>
+          <button class="dshrink-btn-primary" id="dshrink-start-btn">
             <span>⚡ Squeeze & Attach</span>
           </button>
         </div>
@@ -325,10 +491,11 @@
     activeModalHost = host;
 
     const cancelBtn = shadow.getElementById("dshrink-cancel-btn");
+    const closeX = shadow.getElementById("dshrink-close-x");
     const backdrop = shadow.getElementById("dshrink-backdrop");
     const startBtn = shadow.getElementById("dshrink-start-btn");
-    const optionsSection = shadow.getElementById("dshrink-options");
-    const progressContainer = shadow.getElementById("dshrink-progress-container");
+    const optionsArea = shadow.getElementById("dshrink-options-area");
+    const progressCard = shadow.getElementById("dshrink-progress-card");
     const progressBar = shadow.getElementById("dshrink-progress-bar");
     const statusText = shadow.getElementById("dshrink-status-text");
     const percentageText = shadow.getElementById("dshrink-percentage");
@@ -343,14 +510,15 @@
     }
 
     cancelBtn.addEventListener("click", closeModal);
+    closeX.addEventListener("click", closeModal);
     backdrop.addEventListener("click", closeModal);
 
     startBtn.addEventListener("click", function () {
       const targetMB = parseFloat(targetSizeSelect.value);
       const resolution = resolutionSelect.value;
 
-      optionsSection.style.display = "none";
-      progressContainer.style.display = "flex";
+      optionsArea.style.display = "none";
+      progressCard.style.display = "flex";
       startBtn.disabled = true;
       cancelBtn.disabled = true;
 
@@ -363,7 +531,7 @@
         onComplete: (compressedBlob) => {
           progressBar.style.width = "100%";
           percentageText.textContent = "100%";
-          statusText.textContent = `Attached ${formatBytes(compressedBlob.size)} video!`;
+          statusText.textContent = `Attached ${formatBytes(compressedBlob.size)} to chat!`;
 
           setTimeout(() => {
             attachToDiscord(compressedBlob, originalFile.name);
@@ -380,7 +548,7 @@
   }
 
   function compressVideo(file, targetMB, resolutionSetting, callbacks) {
-    callbacks.onProgress(5, "Reading video metadata...");
+    callbacks.onProgress(5, "Reading video...");
 
     const videoEl = document.createElement("video");
     videoEl.preload = "auto";
@@ -412,7 +580,7 @@
       let videoBitrate = Math.floor(totalBitrate - audioBitrate);
       if (videoBitrate < 120000) videoBitrate = 120000;
 
-      callbacks.onProgress(15, `Encoding at ${Math.round(videoBitrate / 1000)} kbps (${width}x${height})...`);
+      callbacks.onProgress(15, `Encoding (${width}x${height})...`);
 
       const canvas = document.createElement("canvas");
       canvas.width = width;
@@ -462,7 +630,7 @@
       videoEl.onplay = () => requestAnimationFrame(drawFrame);
 
       videoEl.onended = () => {
-        callbacks.onProgress(98, "Finalizing compressed file...");
+        callbacks.onProgress(98, "Finishing up...");
         recorder.stop();
       };
     };

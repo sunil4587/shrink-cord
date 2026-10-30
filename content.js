@@ -1,4 +1,4 @@
-// DiscordShrink - Content Script (Professional, Sleek, Native Discord Styling)
+// DiscordShrink - Content Script (Native Discord Segmented Controls & Sleek UI)
 
 (function () {
   "use strict";
@@ -32,8 +32,8 @@
     .dshrink-backdrop {
       position: fixed;
       inset: 0;
-      background-color: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(4px);
+      background-color: rgba(0, 0, 0, 0.72);
+      backdrop-filter: blur(5px);
       animation: dshrink-fade 0.15s ease-out;
     }
 
@@ -41,10 +41,10 @@
       position: relative;
       background: #313338;
       color: #dbdee1;
-      width: 440px;
-      max-width: 90vw;
+      width: 460px;
+      max-width: 92vw;
       border-radius: 5px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.06);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.06);
       overflow: hidden;
       display: flex;
       flex-direction: column;
@@ -53,7 +53,7 @@
     }
 
     .dshrink-header {
-      padding: 16px 20px 12px 20px;
+      padding: 16px 20px 14px 20px;
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
@@ -151,6 +151,58 @@
       border: 1px solid rgba(255, 255, 255, 0.06);
     }
 
+    .dshrink-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .dshrink-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: #b5bac1;
+    }
+
+    /* Professional Discord Segmented Controls */
+    .dshrink-segment-group {
+      display: flex;
+      background: #1e1f22;
+      border-radius: 4px;
+      padding: 3px;
+      gap: 3px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .dshrink-segment-btn {
+      flex: 1;
+      padding: 8px 6px;
+      font-size: 12.5px;
+      font-weight: 500;
+      border-radius: 3px;
+      border: none;
+      background: transparent;
+      color: #949ba4;
+      cursor: pointer;
+      text-align: center;
+      white-space: nowrap;
+      transition: all 0.12s ease;
+      user-select: none;
+    }
+
+    .dshrink-segment-btn:hover {
+      color: #dbdee1;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .dshrink-segment-btn.active {
+      background: #35373c;
+      color: #ffffff;
+      font-weight: 600;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    }
+
     .dshrink-notice {
       background: #2b2d31;
       border-left: 3px solid #f0b232;
@@ -159,61 +211,6 @@
       font-size: 12px;
       color: #dbdee1;
       line-height: 16px;
-    }
-
-    .dshrink-field {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .dshrink-field-label {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-      color: #b5bac1;
-    }
-
-    .dshrink-select-wrapper {
-      position: relative;
-      width: 100%;
-    }
-
-    .dshrink-select {
-      width: 100%;
-      height: 38px;
-      appearance: none;
-      -webkit-appearance: none;
-      background: #1e1f22;
-      color: #dbdee1;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 3px;
-      padding: 0 32px 0 12px;
-      font-size: 13.5px;
-      font-weight: 500;
-      outline: none;
-      cursor: pointer;
-      transition: border-color 0.15s ease;
-    }
-
-    .dshrink-select:hover {
-      border-color: rgba(255, 255, 255, 0.18);
-    }
-
-    .dshrink-select:focus {
-      border-color: #5865f2;
-    }
-
-    .dshrink-select-arrow {
-      position: absolute;
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      pointer-events: none;
-      width: 12px;
-      height: 12px;
-      fill: #80848e;
     }
 
     .dshrink-progress-card {
@@ -229,12 +226,12 @@
     .dshrink-progress-header {
       display: flex;
       justify-content: space-between;
-      font-size: 12px;
+      font-size: 12.5px;
       font-weight: 600;
     }
 
     .dshrink-progress-status {
-      color: #949ba4;
+      color: #dbdee1;
     }
 
     .dshrink-progress-pct {
@@ -244,9 +241,9 @@
 
     .dshrink-progress-track {
       width: 100%;
-      height: 5px;
+      height: 6px;
       background: #1e1f22;
-      border-radius: 2px;
+      border-radius: 3px;
       overflow: hidden;
     }
 
@@ -254,8 +251,13 @@
       width: 0%;
       height: 100%;
       background: #5865f2;
-      border-radius: 2px;
+      border-radius: 3px;
       transition: width 0.15s ease;
+    }
+
+    .dshrink-progress-subtext {
+      font-size: 11.5px;
+      color: #949ba4;
     }
 
     .dshrink-footer {
@@ -358,7 +360,6 @@
     return false;
   }
 
-  // Intercept drop events on Discord
   ["dragenter", "dragover"].forEach((evt) => {
     window.addEventListener(evt, (e) => e.preventDefault(), true);
   });
@@ -391,6 +392,10 @@
 
     let isAborted = false;
     let cleanupFn = null;
+    let selectedClip = 60; // default 60s
+    let selectedSize = 19.0;
+    let selectedRes = "720";
+    let videoDuration = 0;
 
     const host = document.createElement("div");
     host.id = "discord-shrink-host";
@@ -407,7 +412,7 @@
         <div class="dshrink-header">
           <div class="dshrink-header-text">
             <h2>Compress Video</h2>
-            <p>File exceeds Discord's 20MB limit. Optimize to attach.</p>
+            <p>Fits Discord's 20MB limit without Nitro</p>
           </div>
           <button class="dshrink-close-btn" id="dshrink-close-x" aria-label="Close">
             <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
@@ -426,52 +431,44 @@
           <div id="dshrink-warn-container" style="display: none;"></div>
 
           <div id="dshrink-options-area" style="display: flex; flex-direction: column; gap: 12px;">
-            <div class="dshrink-field" id="dshrink-clip-field" style="display: none;">
-              <label class="dshrink-field-label">Clip Length</label>
-              <div class="dshrink-select-wrapper">
-                <select class="dshrink-select" id="dshrink-clip-length">
-                  <option value="60" selected>First 60 seconds (Recommended clip)</option>
-                  <option value="30">First 30 seconds (Quick clip)</option>
-                  <option value="120">First 2 minutes (Extended)</option>
-                  <option value="full">Full video (Takes longer)</option>
-                </select>
-                <svg class="dshrink-select-arrow" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+            <div class="dshrink-group" id="dshrink-clip-group" style="display: none;">
+              <label class="dshrink-label">Clip Duration</label>
+              <div class="dshrink-segment-group" id="dshrink-clip-segments">
+                <button type="button" class="dshrink-segment-btn active" data-val="60">60s Clip</button>
+                <button type="button" class="dshrink-segment-btn" data-val="30">30s Clip</button>
+                <button type="button" class="dshrink-segment-btn" data-val="120">2 Mins</button>
+                <button type="button" class="dshrink-segment-btn" data-val="full">Full Video</button>
               </div>
             </div>
 
-            <div class="dshrink-field">
-              <label class="dshrink-field-label">Target File Size</label>
-              <div class="dshrink-select-wrapper">
-                <select class="dshrink-select" id="dshrink-target-size">
-                  <option value="19.0" selected>19.0 MB — Discord Limit (Guaranteed)</option>
-                  <option value="15.0">15.0 MB — Mobile & Low Bandwidth</option>
-                  <option value="8.0">8.0 MB — Legacy Discord Limit</option>
-                </select>
-                <svg class="dshrink-select-arrow" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+            <div class="dshrink-group">
+              <label class="dshrink-label">Target File Size</label>
+              <div class="dshrink-segment-group" id="dshrink-size-segments">
+                <button type="button" class="dshrink-segment-btn active" data-val="19.0">19 MB (Discord)</button>
+                <button type="button" class="dshrink-segment-btn" data-val="15.0">15 MB (Mobile)</button>
+                <button type="button" class="dshrink-segment-btn" data-val="8.0">8 MB (Legacy)</button>
               </div>
             </div>
 
-            <div class="dshrink-field">
-              <label class="dshrink-field-label">Resolution</label>
-              <div class="dshrink-select-wrapper">
-                <select class="dshrink-select" id="dshrink-resolution">
-                  <option value="720" selected>720p HD (Balanced)</option>
-                  <option value="480">480p SD (Fastest)</option>
-                  <option value="original">Original Resolution</option>
-                </select>
-                <svg class="dshrink-select-arrow" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+            <div class="dshrink-group">
+              <label class="dshrink-label">Quality</label>
+              <div class="dshrink-segment-group" id="dshrink-res-segments">
+                <button type="button" class="dshrink-segment-btn active" data-val="720">720p HD</button>
+                <button type="button" class="dshrink-segment-btn" data-val="480">480p SD</button>
+                <button type="button" class="dshrink-segment-btn" data-val="original">Source</button>
               </div>
             </div>
           </div>
 
           <div class="dshrink-progress-card" id="dshrink-progress-card">
             <div class="dshrink-progress-header">
-              <span class="dshrink-progress-status" id="dshrink-status-text">Compressing video...</span>
+              <span class="dshrink-progress-status" id="dshrink-status-text">Encoding video...</span>
               <span class="dshrink-progress-pct" id="dshrink-percentage">0%</span>
             </div>
             <div class="dshrink-progress-track">
               <div class="dshrink-progress-bar" id="dshrink-progress-bar"></div>
             </div>
+            <span class="dshrink-progress-subtext" id="dshrink-progress-subtext">Optimizing frames at high speed...</span>
           </div>
         </div>
 
@@ -497,14 +494,37 @@
     const progressBar = shadow.getElementById("dshrink-progress-bar");
     const statusText = shadow.getElementById("dshrink-status-text");
     const percentageText = shadow.getElementById("dshrink-percentage");
+    const subtextEl = shadow.getElementById("dshrink-progress-subtext");
     const durationPill = shadow.getElementById("dshrink-duration-pill");
     const warnContainer = shadow.getElementById("dshrink-warn-container");
-    const clipField = shadow.getElementById("dshrink-clip-field");
-    const clipLengthSelect = shadow.getElementById("dshrink-clip-length");
-    const targetSizeSelect = shadow.getElementById("dshrink-target-size");
-    const resolutionSelect = shadow.getElementById("dshrink-resolution");
+    const clipGroup = shadow.getElementById("dshrink-clip-group");
 
-    let videoDuration = 0;
+    // Segment helper
+    function setupSegments(containerId, onSelect) {
+      const parent = shadow.getElementById(containerId);
+      const buttons = parent.querySelectorAll(".dshrink-segment-btn");
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          buttons.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          onSelect(btn.getAttribute("data-val"));
+        });
+      });
+    }
+
+    setupSegments("dshrink-clip-segments", (val) => {
+      selectedClip = val === "full" ? "full" : parseFloat(val);
+    });
+
+    setupSegments("dshrink-size-segments", (val) => {
+      selectedSize = parseFloat(val);
+    });
+
+    setupSegments("dshrink-res-segments", (val) => {
+      selectedRes = val;
+    });
+
+    // Probe duration
     const probeVideo = document.createElement("video");
     probeVideo.preload = "metadata";
     probeVideo.muted = true;
@@ -516,15 +536,18 @@
       durationPill.textContent = formatDuration(videoDuration);
       URL.revokeObjectURL(probeUrl);
 
-      // If video is longer than 2 minutes
+      // If video is longer than 2 minutes, show clip selector by default
       if (videoDuration > 120) {
-        clipField.style.display = "flex";
+        clipGroup.style.display = "flex";
+        selectedClip = 60; // 60s clip by default
         warnContainer.style.display = "block";
         warnContainer.innerHTML = `
           <div class="dshrink-notice">
-            Long video detected (${formatDuration(videoDuration)}). Selecting a 60s clip is recommended for fast encoding.
+            Long video detected (${formatDuration(videoDuration)}). Clipping to 60s is selected for fast encoding.
           </div>
         `;
+      } else {
+        selectedClip = videoDuration;
       }
     };
 
@@ -549,7 +572,6 @@
     closeX.addEventListener("click", cancelAndClose);
     backdrop.addEventListener("click", cancelAndClose);
 
-    // ESC key closes modal
     const keyHandler = (e) => {
       if (e.key === "Escape") {
         cancelAndClose();
@@ -559,15 +581,15 @@
     window.addEventListener("keydown", keyHandler);
 
     startBtn.addEventListener("click", function () {
-      const targetMB = parseFloat(targetSizeSelect.value);
-      const resolutionSetting = resolutionSelect.value;
-      
-      let maxDuration = videoDuration || 60;
-      if (videoDuration > 120) {
-        const clipChoice = clipLengthSelect.value;
-        if (clipChoice !== "full") {
-          maxDuration = Math.min(parseFloat(clipChoice), videoDuration);
+      let maxDuration = 60;
+      if (videoDuration > 0) {
+        if (selectedClip === "full") {
+          maxDuration = videoDuration;
+        } else {
+          maxDuration = Math.min(parseFloat(selectedClip), videoDuration);
         }
+      } else {
+        maxDuration = 60;
       }
 
       optionsArea.style.display = "none";
@@ -576,18 +598,20 @@
       startBtn.disabled = true;
       cancelBtn.textContent = "Cancel";
 
-      cleanupFn = compressVideo(originalFile, targetMB, resolutionSetting, maxDuration, {
-        onProgress: (percent, status) => {
+      cleanupFn = compressVideo(originalFile, selectedSize, selectedRes, maxDuration, {
+        onProgress: (percent, status, subtext) => {
           if (isAborted) return;
           progressBar.style.width = percent + "%";
           percentageText.textContent = Math.round(percent) + "%";
           if (status) statusText.textContent = status;
+          if (subtext) subtextEl.textContent = subtext;
         },
         onComplete: (compressedBlob) => {
           if (isAborted) return;
           progressBar.style.width = "100%";
           percentageText.textContent = "100%";
           statusText.textContent = `Attached ${formatBytes(compressedBlob.size)} to Discord`;
+          subtextEl.textContent = "Completed successfully";
 
           setTimeout(() => {
             if (!isAborted) {
@@ -606,7 +630,7 @@
   }
 
   function compressVideo(file, targetMB, resolutionSetting, maxDuration, callbacks) {
-    callbacks.onProgress(5, "Analyzing video...");
+    callbacks.onProgress(5, "Analyzing video stream...", "Preparing encoder...");
 
     const videoEl = document.createElement("video");
     videoEl.preload = "auto";
@@ -651,13 +675,12 @@
       if (width % 2 !== 0) width--;
       if (height % 2 !== 0) height--;
 
-      // Calculate bitrate to strictly fit target size
       const targetBytes = targetMB * 1024 * 1024 * 0.95;
       const totalBits = targetBytes * 8;
       const totalBitrate = Math.floor(totalBits / targetDuration);
       let videoBitrate = Math.max(180000, totalBitrate - 96000);
 
-      callbacks.onProgress(15, `Encoding (${width}x${height})...`);
+      callbacks.onProgress(15, `Encoding video...`, `Target: ${width}x${height} • Limit: ${targetMB} MB`);
 
       const canvas = document.createElement("canvas");
       canvas.width = width;
@@ -698,7 +721,7 @@
         if (isStopped) return;
 
         if (videoEl.currentTime >= targetDuration || videoEl.ended || videoEl.paused) {
-          callbacks.onProgress(98, "Finalizing...");
+          callbacks.onProgress(98, "Finalizing file...", "Attaching to Discord...");
           recorder.stop();
           return;
         }
@@ -706,9 +729,14 @@
         ctx.drawImage(videoEl, 0, 0, width, height);
 
         const currentProgress = 15 + (videoEl.currentTime / targetDuration) * 80;
+        const currentSec = Math.floor(videoEl.currentTime);
+        const totalSec = Math.floor(targetDuration);
+        const remaining = Math.max(0, Math.round((totalSec - currentSec) / 4));
+
         callbacks.onProgress(
           currentProgress,
-          `Encoding: ${(videoEl.currentTime).toFixed(0)}s / ${targetDuration.toFixed(0)}s`
+          `Encoding: ${currentSec}s / ${totalSec}s`,
+          `Running at 4x speed • ~${remaining}s remaining`
         );
 
         requestAnimationFrame(drawFrame);
@@ -729,7 +757,6 @@
     const cleanName = originalName.replace(/\.[^/.]+$/, "") + "-compressed.webm";
     const compressedFile = new File([blob], cleanName, { type: "video/webm" });
 
-    // Method 1: Discord's native hidden file input
     const fileInput = document.querySelector('input[type="file"]');
     if (fileInput) {
       const dataTransfer = new DataTransfer();
@@ -739,7 +766,6 @@
       return;
     }
 
-    // Method 2: Drop on active chat box
     const chatBox = document.querySelector('[role="textbox"]') || document.querySelector('[contenteditable="true"]');
     if (chatBox) {
       const dataTransfer = new DataTransfer();

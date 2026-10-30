@@ -1,5 +1,5 @@
 /**
- * DiscordShrink - Core Media Compression Engine
+ * ShrinkCord - Core Media Compression Engine
  * Pure client-side transcoding pipeline for video and audio.
  */
 
@@ -21,7 +21,7 @@
     ],
     SIZES: [
       { val: 19.0, label: "19 MB (Discord)" },
-      { val: 15.0, label: "15 MB (Mobile)" },
+      { val: 15.0, label: "15 MB (Balanced)" },
       { val: 8.0, label: "8 MB (Legacy)" }
     ],
     VIDEO_QUALITIES: [
@@ -557,8 +557,8 @@
     return cleanup;
   }
 
-  window.DiscordShrink = window.DiscordShrink || {};
-  window.DiscordShrink.Compressor = {
+  window.ShrinkCord = window.ShrinkCord || {};
+  window.ShrinkCord.Compressor = {
     DISCORD_LIMIT_BYTES,
     PRESETS,
     resolveSettings,

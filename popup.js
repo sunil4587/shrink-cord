@@ -1,5 +1,5 @@
 /**
- * DiscordShrink - Popup Settings Logic
+ * ShrinkCord - Popup Settings Logic
  */
 
 document.addEventListener("DOMContentLoaded", function () {

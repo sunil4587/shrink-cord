@@ -1,5 +1,5 @@
 /**
- * DiscordShrink - Modern Native Discord UI Component
+ * ShrinkCord - Modern Native Discord UI Component
  * 1:1 Discord Dark Theme modal matching Discord's official design system.
  */
 
@@ -575,7 +575,7 @@
   }
 
   function openModal(file, callbacks, defaults = {}) {
-    const Compressor = window.DiscordShrink.Compressor;
+    const Compressor = window.ShrinkCord.Compressor;
     const { PRESETS } = Compressor;
     const isAudio = Compressor.isAudioFile(file);
     const resolved = Compressor.resolveSettings(defaults);
@@ -607,7 +607,7 @@
 
         <div class="dshrink-hero" id="dshrink-hero">
           <div class="dshrink-hero-logo-box">
-            <img class="dshrink-hero-logo" src="${LOGO_URL}" alt="DiscordShrink Logo" />
+            <img class="dshrink-hero-logo" src="${LOGO_URL}" alt="ShrinkCord Logo" />
           </div>
           <span class="dshrink-badge">${isAudio ? "AUDIO AUTO-SHRINK" : "AUTO-SHRINK"}</span>
           <h2 class="dshrink-title">Uh oh, this file exceeds the size limit.</h2>
@@ -828,8 +828,8 @@
     };
   }
 
-  window.DiscordShrink = window.DiscordShrink || {};
-  window.DiscordShrink.UI = {
+  window.ShrinkCord = window.ShrinkCord || {};
+  window.ShrinkCord.UI = {
     openModal
   };
 })();

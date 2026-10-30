@@ -1,4 +1,4 @@
-# ⚡ DiscordShrink
+# ⚡ ShrinkCord
 
 > **Automatically catch oversized videos and audio on Discord Web and shrink them under 20MB right in your browser.**  
 > *100% Client-Side • Zero Cloud Uploads • Open Source (GPLv3) • Zero Telemetry*
@@ -14,7 +14,7 @@ You record a gaming clip or audio track on your computer. You drag it into Disco
 > ❌ **"Uh oh, this file exceeds the size limit. The max file size is 20MB."**
 
 ## ⚡ The Solution
-**DiscordShrink** silently intercepts media drop and paste events on `discord.com`:
+**ShrinkCord** silently intercepts media drop and paste events on `discord.com`:
 1. **Catches oversized media instantly** before Discord triggers the Nitro paywall.
 2. A 1:1 Discord Nitro-style modal allows shrinking to **19MB** with custom presets.
 3. Compresses video and audio **locally in your browser** at hardware speeds.
@@ -35,19 +35,19 @@ Until the extension is published on the Chrome Web Store, you can install it loc
 
 1. Clone or download this repository:
    ```bash
-   git clone https://github.com/yourusername/discord-shrink.git
+   git clone https://github.com/sunil4587/shrink-cord.git
    ```
 2. Open **Google Chrome**, **Brave**, or **Microsoft Edge**.
 3. Navigate to `chrome://extensions/` in your address bar.
 4. Toggle **"Developer mode"** ON in the top-right corner.
 5. Click **"Load unpacked"** in the top-left corner.
-6. Select the `discord-shrink` folder.
+6. Select the shrink-cord folder.
 7. Open [Discord Web](https://discord.com/app), drag any video or audio file larger than 20MB into a chat, and watch the magic happen!
 
 ---
 
 ## ⚙️ Configuration
-Click the DiscordShrink icon in your Chrome toolbar to customize:
+Click the ShrinkCord icon in your Chrome toolbar to customize:
 * **Default Target Size:** `19.0 MB` (Discord Free safe limit), `15.0 MB` (Mobile / WhatsApp), or `8.0 MB` (Legacy).
 * **Default Video Quality:** `1080p FHD` (crisp quality), `720p HD` (balanced), or `480p SD` (compact).
 * **Default Audio Quality:** `Studio (32kHz)`, `High (22kHz)`, or `Voice (Mono)`.

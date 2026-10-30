@@ -1,12 +1,12 @@
 /**
- * DiscordShrink - Content Script Controller
+ * ShrinkCord - Content Script Controller
  * Intercepts oversized uploads (>20MB) on Discord Web and bridges UI with Compressor.
  */
 
 (function () {
   "use strict";
 
-  const { Compressor, UI } = window.DiscordShrink;
+  const { Compressor, UI } = window.ShrinkCord;
   const INTERCEPT_EVENTS = ["drop", "paste", "change"];
   const generatedFiles = new WeakSet();
   let cachedSettings = {};

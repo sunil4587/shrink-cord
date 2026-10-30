@@ -1,5 +1,5 @@
 /**
- * DiscordShrink - WebM Duration Metadata Patcher
+ * ShrinkCord - WebM Duration Metadata Patcher
  */
 
 (function (name, definition) {

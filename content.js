@@ -1,4 +1,4 @@
-// DiscordShrink - Content Script (DOM Interception & Shadow DOM Modal)
+// DiscordShrink - Content Script (DOM Interception, Shadow DOM & Video Compressor)
 
 (function () {
   "use strict";
@@ -21,11 +21,11 @@
     return /\.(mp4|mov|mkv|webm|avi|flv|wmv|m4v)$/i.test(name);
   }
 
-  // Intercept Drag & Drop
+  // Intercept Drag & Drop anywhere on Discord Web
   window.addEventListener(
     "drop",
     function (event) {
-      if (!event.dataTransfer || !event.dataTransfer.files) return;
+      if (!event.dataTransfer || !event.dataTransfer.files || event.dataTransfer.files.length === 0) return;
       const file = event.dataTransfer.files[0];
 
       if (isVideoFile(file) && file.size > DISCORD_FREE_LIMIT_BYTES) {
@@ -34,14 +34,14 @@
         openShrinkModal(file);
       }
     },
-    true // Capture phase to intercept before Discord React listeners
+    true // Capture phase to intercept before Discord's React listeners
   );
 
-  // Intercept Paste (e.g. copied video file or screen recording)
+  // Intercept Paste events (e.g. copied video or screen recording clip)
   window.addEventListener(
     "paste",
     function (event) {
-      if (!event.clipboardData || !event.clipboardData.files) return;
+      if (!event.clipboardData || !event.clipboardData.files || event.clipboardData.files.length === 0) return;
       const file = event.clipboardData.files[0];
 
       if (isVideoFile(file) && file.size > DISCORD_FREE_LIMIT_BYTES) {
@@ -91,16 +91,16 @@
           <div class="dshrink-option-group" id="dshrink-options">
             <label class="dshrink-label">Target File Size</label>
             <select class="dshrink-select" id="dshrink-target-size">
-              <option value="24" selected>24.0 MB (Discord Free Safe Limit)</option>
-              <option value="15">15.0 MB (WhatsApp & Mobile Friendly)</option>
-              <option value="7.5">7.5 MB (Ultra Compact / Low Bandwidth)</option>
+              <option value="23.8" selected>23.8 MB (Discord Free Safe Limit)</option>
+              <option value="15.0">15.0 MB (WhatsApp & Mobile Friendly)</option>
+              <option value="7.5">7.5 MB (Ultra Compact)</option>
             </select>
 
-            <label class="dshrink-label" style="margin-top: 8px;">Resolution</label>
+            <label class="dshrink-label" style="margin-top: 8px;">Resolution Quality</label>
             <select class="dshrink-select" id="dshrink-resolution">
               <option value="720" selected>Auto 720p (Recommended balance)</option>
               <option value="480">480p (Fastest encode)</option>
-              <option value="original">Keep Original Resolution</option>
+              <option value="original">Keep Original</option>
             </select>
           </div>
 
@@ -109,7 +109,7 @@
               <div class="dshrink-progress-bar-fill" id="dshrink-progress-bar"></div>
             </div>
             <div class="dshrink-progress-text">
-              <span id="dshrink-status-text">Optimizing video...</span>
+              <span id="dshrink-status-text">Analyzing video...</span>
               <span id="dshrink-percentage">0%</span>
             </div>
           </div>
@@ -160,7 +160,7 @@
       startBtn.disabled = true;
       cancelBtn.disabled = true;
 
-      processVideo(originalFile, targetMB, resolution, {
+      compressVideo(originalFile, targetMB, resolution, {
         onProgress: (percent, status) => {
           progressBar.style.width = percent + "%";
           percentageText.textContent = Math.round(percent) + "%";
@@ -169,12 +169,12 @@
         onComplete: (compressedBlob) => {
           progressBar.style.width = "100%";
           percentageText.textContent = "100%";
-          statusText.textContent = "Attaching to Discord...";
+          statusText.textContent = `Attached ${formatBytes(compressedBlob.size)} video to Discord!`;
 
           setTimeout(() => {
             attachToDiscord(compressedBlob, originalFile.name);
             closeModal();
-          }, 400);
+          }, 500);
         },
         onError: (err) => {
           statusText.textContent = "Error: " + err.message;
@@ -185,62 +185,117 @@
     });
   }
 
-  // Fast Client-Side Video Compressor Bridge
-  function processVideo(file, targetMB, resolution, callbacks) {
-    callbacks.onProgress(10, "Analyzing video bitrate & duration...");
+  // High-Speed Client-Side Video Compressor
+  function compressVideo(file, targetMB, resolutionSetting, callbacks) {
+    callbacks.onProgress(5, "Reading video duration & dimensions...");
 
     const videoEl = document.createElement("video");
-    videoEl.preload = "metadata";
-    videoEl.src = URL.createObjectURL(file);
+    videoEl.preload = "auto";
+    videoEl.muted = true;
+    videoEl.playsInline = true;
+    const fileUrl = URL.createObjectURL(file);
+    videoEl.src = fileUrl;
 
     videoEl.onloadedmetadata = function () {
-      URL.revokeObjectURL(videoEl.src);
-      const durationSeconds = videoEl.duration || 30; // fallback to 30s
-      
-      // Calculate target bitrate to strictly guarantee file size <= targetMB
-      // Target Bytes = targetMB * 1024 * 1024
-      // Total Bitrate = (Target Bytes * 8) / durationSeconds
-      // Audio Bitrate = 128 kbps (128000 bps)
-      const targetBytes = targetMB * 1024 * 1024;
-      const totalBits = targetBytes * 8;
-      const totalBitrate = totalBits / durationSeconds;
-      const audioBitrate = 128000;
-      let videoBitrate = Math.floor(totalBitrate - audioBitrate);
+      const duration = videoEl.duration || 30;
+      let width = videoEl.videoWidth || 1280;
+      let height = videoEl.videoHeight || 720;
 
-      if (videoBitrate < 150000) {
-        videoBitrate = 150000; // minimum 150 kbps
+      // Adjust resolution if selected
+      if (resolutionSetting === "720" && height > 720) {
+        width = Math.round((width * 720) / height);
+        height = 720;
+      } else if (resolutionSetting === "480" && height > 480) {
+        width = Math.round((width * 480) / height);
+        height = 480;
       }
 
-      callbacks.onProgress(30, "Preparing WebAssembly pipeline...");
+      // Ensure even dimensions for codecs
+      if (width % 2 !== 0) width--;
+      if (height % 2 !== 0) height--;
 
-      // Simulate step-wise progress for WASM pipeline integration
-      let progress = 35;
-      const interval = setInterval(() => {
-        progress += (95 - progress) * 0.15;
-        callbacks.onProgress(progress, `Compressing video (${Math.round(videoBitrate / 1000)}k bitrate)...`);
-        
-        if (progress > 93) {
-          clearInterval(interval);
-          
-          // Generate optimized file payload
-          // In full WASM packaging, this yields the compressed output blob
-          const simulatedCompressedBlob = file.slice(0, Math.min(file.size, Math.floor(targetBytes * 0.95)), "video/mp4");
-          callbacks.onComplete(simulatedCompressedBlob);
-        }
-      }, 300);
+      // Calculate Target Bitrate
+      const targetBytes = targetMB * 1024 * 1024;
+      const totalBits = targetBytes * 8;
+      const totalBitrate = Math.floor(totalBits / duration);
+      const audioBitrate = 96000; // 96 kbps
+      let videoBitrate = Math.floor(totalBitrate - audioBitrate);
+
+      if (videoBitrate < 120000) videoBitrate = 120000; // Min safe bitrate
+
+      callbacks.onProgress(15, `Encoding at ${Math.round(videoBitrate / 1000)} kbps (${width}x${height})...`);
+
+      // Canvas Transcoder Pipeline
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+
+      // Capture canvas stream at 30fps
+      const stream = canvas.captureStream(30);
+
+      // Check supported MIME types in Chrome
+      let mimeType = "video/webm;codecs=vp9,opus";
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = "video/webm;codecs=vp8,opus";
+      }
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = "video/webm";
+      }
+
+      const recorder = new MediaRecorder(stream, {
+        mimeType: mimeType,
+        videoBitsPerSecond: videoBitrate,
+        audioBitsPerSecond: audioBitrate
+      });
+
+      const chunks = [];
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunks.push(e.data);
+      };
+
+      recorder.onstop = () => {
+        URL.revokeObjectURL(fileUrl);
+        const finalBlob = new Blob(chunks, { type: "video/webm" });
+        callbacks.onComplete(finalBlob);
+      };
+
+      recorder.start(100);
+
+      // Play through video at up to 2x speed for faster encoding
+      videoEl.playbackRate = 2.0;
+      videoEl.play();
+
+      function drawFrame() {
+        if (videoEl.paused || videoEl.ended) return;
+        ctx.drawImage(videoEl, 0, 0, width, height);
+
+        const currentProgress = 15 + (videoEl.currentTime / duration) * 80;
+        callbacks.onProgress(currentProgress, `Compressing... ${(videoEl.currentTime).toFixed(0)}s / ${duration.toFixed(0)}s`);
+
+        requestAnimationFrame(drawFrame);
+      }
+
+      videoEl.onplay = () => requestAnimationFrame(drawFrame);
+
+      videoEl.onended = () => {
+        callbacks.onProgress(98, "Finalizing compressed file...");
+        recorder.stop();
+      };
     };
 
-    videoEl.onerror = function () {
-      callbacks.onError(new Error("Could not parse video metadata"));
+    videoEl.onerror = () => {
+      URL.revokeObjectURL(fileUrl);
+      callbacks.onError(new Error("Unable to decode video format."));
     };
   }
 
   // Injects the compressed file back into Discord's native upload box
   function attachToDiscord(blob, originalName) {
-    const cleanName = originalName.replace(/\.[^/.]+$/, "") + "-compressed.mp4";
-    const compressedFile = new File([blob], cleanName, { type: "video/mp4" });
+    const cleanName = originalName.replace(/\.[^/.]+$/, "") + "-compressed.webm";
+    const compressedFile = new File([blob], cleanName, { type: "video/webm" });
 
-    // Look for Discord's hidden file input
+    // 1. Look for Discord's hidden file input
     const fileInput = document.querySelector('input[type="file"]');
     if (fileInput) {
       const dataTransfer = new DataTransfer();
@@ -250,7 +305,7 @@
       return;
     }
 
-    // Alternative: Dispatch synthetic drop event onto chat textbox
+    // 2. Alternative: Dispatch synthetic drop event onto chat textbox
     const chatBox = document.querySelector('[role="textbox"]') || document.querySelector('[contenteditable="true"]');
     if (chatBox) {
       const dataTransfer = new DataTransfer();
@@ -264,5 +319,5 @@
     }
   }
 
-  console.log("⚡ DiscordShrink extension initialized and active.");
+  console.log("⚡ DiscordShrink v1.0.0 initialized and ready.");
 })();

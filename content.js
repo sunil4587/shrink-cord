@@ -1,4 +1,4 @@
-// DiscordShrink - Content Script (Ultra-Fast, Rock-Solid, Instantly Cancellable)
+// DiscordShrink - Content Script (Professional, Sleek, Native Discord Styling)
 
 (function () {
   "use strict";
@@ -6,7 +6,7 @@
   const DISCORD_LIMIT_BYTES = 19 * 1024 * 1024; // 19 MB (Safety margin below 20MB)
   let activeModalHost = null;
 
-  console.log("%c⚡ DiscordShrink v1.2 Active!", "background: #5865F2; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;");
+  console.log("%cDiscordShrink Active", "color: #5865F2; font-weight: bold;");
 
   const MODAL_CSS = `
     :host {
@@ -32,87 +32,62 @@
     .dshrink-backdrop {
       position: fixed;
       inset: 0;
-      background-color: rgba(0, 0, 0, 0.82);
-      backdrop-filter: blur(12px);
-      animation: dshrink-fade-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      background-color: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      animation: dshrink-fade 0.15s ease-out;
     }
 
     .dshrink-modal {
       position: relative;
       background: #313338;
       color: #dbdee1;
-      width: 92%;
-      max-width: 480px;
-      border-radius: 16px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.08);
+      width: 440px;
+      max-width: 90vw;
+      border-radius: 5px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.06);
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      animation: dshrink-scale-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      animation: dshrink-scale 0.15s ease-out;
       z-index: 10;
     }
 
     .dshrink-header {
-      padding: 22px 24px 16px 24px;
+      padding: 16px 20px 12px 20px;
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
     }
 
-    .dshrink-header-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .dshrink-icon-badge {
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, rgba(88, 101, 242, 0.25), rgba(88, 101, 242, 0.1));
-      border: 1px solid rgba(88, 101, 242, 0.35);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .dshrink-icon-badge svg {
-      width: 22px;
-      height: 22px;
-      fill: #5865f2;
-    }
-
     .dshrink-header-text h2 {
       font-size: 18px;
       font-weight: 700;
-      color: #ffffff;
-      letter-spacing: -0.2px;
-      line-height: 1.2;
+      color: #f2f3f5;
+      line-height: 22px;
+      letter-spacing: -0.1px;
     }
 
     .dshrink-header-text p {
       font-size: 13px;
       color: #949ba4;
       margin-top: 3px;
+      line-height: 16px;
     }
 
     .dshrink-close-btn {
       background: transparent;
       border: none;
-      color: #80848e;
+      color: #949ba4;
       cursor: pointer;
-      padding: 6px;
-      border-radius: 6px;
+      padding: 4px;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.15s ease;
+      transition: color 0.12s ease;
     }
 
     .dshrink-close-btn:hover {
-      color: #dbdee1;
-      background: rgba(255, 255, 255, 0.08);
+      color: #f2f3f5;
     }
 
     .dshrink-close-btn svg {
@@ -122,35 +97,21 @@
     }
 
     .dshrink-body {
-      padding: 0 24px 20px 24px;
+      padding: 0 20px 18px 20px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
     }
 
-    .dshrink-file-card {
+    .dshrink-file-row {
       background: #2b2d31;
-      border-radius: 10px;
-      padding: 12px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+      padding: 10px 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border: 1px solid rgba(255, 255, 255, 0.06);
       gap: 10px;
-    }
-
-    .dshrink-file-card-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-width: 0;
-    }
-
-    .dshrink-file-card-left svg {
-      width: 20px;
-      height: 20px;
-      fill: #b5bac1;
-      flex-shrink: 0;
     }
 
     .dshrink-filename {
@@ -160,54 +121,44 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      flex: 1;
     }
 
-    .dshrink-pill-group {
+    .dshrink-tags {
       display: flex;
       align-items: center;
       gap: 6px;
       flex-shrink: 0;
     }
 
-    .dshrink-size-pill {
-      font-size: 11px;
-      font-weight: 700;
-      color: #f23f43;
-      background: rgba(242, 63, 67, 0.15);
-      padding: 3px 8px;
-      border-radius: 999px;
-      border: 1px solid rgba(242, 63, 67, 0.3);
-    }
-
-    .dshrink-duration-pill {
+    .dshrink-tag {
       font-size: 11px;
       font-weight: 600;
-      color: #b5bac1;
-      background: rgba(255, 255, 255, 0.07);
-      padding: 3px 8px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 2px 6px;
+      border-radius: 3px;
+      letter-spacing: 0.2px;
     }
 
-    .dshrink-warn-box {
-      background: rgba(240, 178, 50, 0.1);
-      border: 1px solid rgba(240, 178, 50, 0.3);
-      border-radius: 8px;
-      padding: 10px 12px;
+    .dshrink-tag-size {
+      color: #f23f43;
+      background: rgba(242, 63, 67, 0.15);
+      border: 1px solid rgba(242, 63, 67, 0.25);
+    }
+
+    .dshrink-tag-duration {
+      color: #949ba4;
+      background: #1e1f22;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .dshrink-notice {
+      background: #2b2d31;
+      border-left: 3px solid #f0b232;
+      border-radius: 0 3px 3px 0;
+      padding: 8px 12px;
       font-size: 12px;
-      color: #f0b232;
-      line-height: 1.4;
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-    }
-
-    .dshrink-warn-box svg {
-      width: 16px;
-      height: 16px;
-      fill: #f0b232;
-      flex-shrink: 0;
-      margin-top: 1px;
+      color: #dbdee1;
+      line-height: 16px;
     }
 
     .dshrink-field {
@@ -220,7 +171,7 @@
       font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.6px;
+      letter-spacing: 0.4px;
       color: #b5bac1;
     }
 
@@ -231,145 +182,141 @@
 
     .dshrink-select {
       width: 100%;
+      height: 38px;
       appearance: none;
       -webkit-appearance: none;
       background: #1e1f22;
-      color: #f2f3f5;
+      color: #dbdee1;
       border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 8px;
-      padding: 11px 14px;
-      padding-right: 36px;
+      border-radius: 3px;
+      padding: 0 32px 0 12px;
       font-size: 13.5px;
       font-weight: 500;
       outline: none;
       cursor: pointer;
-      transition: all 0.15s ease;
+      transition: border-color 0.15s ease;
     }
 
     .dshrink-select:hover {
-      border-color: rgba(255, 255, 255, 0.16);
+      border-color: rgba(255, 255, 255, 0.18);
     }
 
     .dshrink-select:focus {
       border-color: #5865f2;
-      box-shadow: 0 0 0 2px rgba(88, 101, 242, 0.25);
     }
 
     .dshrink-select-arrow {
       position: absolute;
-      right: 14px;
+      right: 12px;
       top: 50%;
       transform: translateY(-50%);
       pointer-events: none;
-      width: 14px;
-      height: 14px;
+      width: 12px;
+      height: 12px;
       fill: #80848e;
     }
 
     .dshrink-progress-card {
       display: none;
       background: #2b2d31;
-      border-radius: 10px;
-      padding: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 4px;
+      padding: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
     }
 
     .dshrink-progress-header {
       display: flex;
       justify-content: space-between;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
     }
 
     .dshrink-progress-status {
-      color: #dbdee1;
+      color: #949ba4;
     }
 
     .dshrink-progress-pct {
-      color: #23a55a;
+      color: #5865f2;
       font-weight: 700;
     }
 
     .dshrink-progress-track {
       width: 100%;
-      height: 8px;
+      height: 5px;
       background: #1e1f22;
-      border-radius: 999px;
+      border-radius: 2px;
       overflow: hidden;
     }
 
     .dshrink-progress-bar {
       width: 0%;
       height: 100%;
-      background: linear-gradient(90deg, #5865f2, #23a55a);
-      border-radius: 999px;
-      transition: width 0.2s ease;
+      background: #5865f2;
+      border-radius: 2px;
+      transition: width 0.15s ease;
     }
 
     .dshrink-footer {
-      padding: 16px 24px;
+      padding: 14px 20px;
       background: #2b2d31;
       display: flex;
       justify-content: flex-end;
       align-items: center;
-      gap: 12px;
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      gap: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .dshrink-btn-cancel {
       background: transparent;
-      color: #f2f3f5;
+      color: #ffffff;
       font-size: 14px;
       font-weight: 500;
       border: none;
       cursor: pointer;
-      padding: 10px 18px;
-      border-radius: 8px;
-      transition: all 0.15s ease;
+      padding: 8px 16px;
+      border-radius: 3px;
+      transition: text-decoration 0.12s ease;
     }
 
     .dshrink-btn-cancel:hover {
-      background: rgba(255, 255, 255, 0.07);
-      color: #fa777c;
+      text-decoration: underline;
     }
 
     .dshrink-btn-primary {
       background: #5865f2;
       color: #ffffff;
       font-size: 14px;
-      font-weight: 600;
+      font-weight: 500;
       border: none;
-      border-radius: 8px;
-      padding: 11px 22px;
+      border-radius: 3px;
+      height: 38px;
+      padding: 0 20px;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 8px;
-      transition: all 0.15s ease;
-      box-shadow: 0 4px 12px rgba(88, 101, 242, 0.35);
+      justify-content: center;
+      transition: background-color 0.15s ease;
     }
 
     .dshrink-btn-primary:hover {
       background: #4752c4;
-      box-shadow: 0 4px 16px rgba(88, 101, 242, 0.5);
     }
 
     .dshrink-btn-primary:disabled {
       background: #35373c !important;
       color: #80848e !important;
-      box-shadow: none !important;
       cursor: not-allowed;
     }
 
-    @keyframes dshrink-fade-in {
+    @keyframes dshrink-fade {
       from { opacity: 0; }
       to { opacity: 1; }
     }
 
-    @keyframes dshrink-scale-in {
-      from { transform: scale(0.92); opacity: 0; }
+    @keyframes dshrink-scale {
+      from { transform: scale(0.97); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
     }
   `;
@@ -458,16 +405,9 @@
       <div class="dshrink-backdrop" id="dshrink-backdrop"></div>
       <div class="dshrink-modal" role="dialog" aria-modal="true">
         <div class="dshrink-header">
-          <div class="dshrink-header-left">
-            <div class="dshrink-icon-badge">
-              <svg viewBox="0 0 24 24">
-                <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
-              </svg>
-            </div>
-            <div class="dshrink-header-text">
-              <h2>DiscordShrink Video Optimizer</h2>
-              <p>Compress locally to fit Discord's 20MB limit</p>
-            </div>
+          <div class="dshrink-header-text">
+            <h2>Compress Video</h2>
+            <p>File exceeds Discord's 20MB limit. Optimize to attach.</p>
           </div>
           <button class="dshrink-close-btn" id="dshrink-close-x" aria-label="Close">
             <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
@@ -475,28 +415,25 @@
         </div>
         
         <div class="dshrink-body">
-          <div class="dshrink-file-card">
-            <div class="dshrink-file-card-left">
-              <svg viewBox="0 0 24 24"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg>
-              <span class="dshrink-filename" title="${originalFile.name}">${originalFile.name}</span>
-            </div>
-            <div class="dshrink-pill-group">
-              <span class="dshrink-duration-pill" id="dshrink-duration-pill">Loading...</span>
-              <span class="dshrink-size-pill">${formatBytes(originalFile.size)}</span>
+          <div class="dshrink-file-row">
+            <span class="dshrink-filename" title="${originalFile.name}">${originalFile.name}</span>
+            <div class="dshrink-tags">
+              <span class="dshrink-tag dshrink-tag-duration" id="dshrink-duration-pill">Loading...</span>
+              <span class="dshrink-tag dshrink-tag-size">${formatBytes(originalFile.size)}</span>
             </div>
           </div>
 
           <div id="dshrink-warn-container" style="display: none;"></div>
 
-          <div id="dshrink-options-area" style="display: flex; flex-direction: column; gap: 14px;">
+          <div id="dshrink-options-area" style="display: flex; flex-direction: column; gap: 12px;">
             <div class="dshrink-field" id="dshrink-clip-field" style="display: none;">
-              <label class="dshrink-field-label">Length to Share</label>
+              <label class="dshrink-field-label">Clip Length</label>
               <div class="dshrink-select-wrapper">
                 <select class="dshrink-select" id="dshrink-clip-length">
-                  <option value="60" selected>⚡ Highlight Clip (First 60s) — Instant (~10s encode)</option>
-                  <option value="30">⚡ Quick Clip (First 30s) — Ultra-Fast (~5s encode)</option>
-                  <option value="120">⚡ Extended Clip (First 2 min) — (~20s encode)</option>
-                  <option value="full">Full Video (Slow — takes several minutes)</option>
+                  <option value="60" selected>First 60 seconds (Recommended clip)</option>
+                  <option value="30">First 30 seconds (Quick clip)</option>
+                  <option value="120">First 2 minutes (Extended)</option>
+                  <option value="full">Full video (Takes longer)</option>
                 </select>
                 <svg class="dshrink-select-arrow" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
               </div>
@@ -506,19 +443,19 @@
               <label class="dshrink-field-label">Target File Size</label>
               <div class="dshrink-select-wrapper">
                 <select class="dshrink-select" id="dshrink-target-size">
-                  <option value="19.0" selected>19.0 MB — Discord Safe Limit (Guaranteed)</option>
-                  <option value="15.0">15.0 MB — Safe Buffer / Mobile</option>
-                  <option value="8.0">8.0 MB — Legacy Discord Size</option>
+                  <option value="19.0" selected>19.0 MB — Discord Limit (Guaranteed)</option>
+                  <option value="15.0">15.0 MB — Mobile & Low Bandwidth</option>
+                  <option value="8.0">8.0 MB — Legacy Discord Limit</option>
                 </select>
                 <svg class="dshrink-select-arrow" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
               </div>
             </div>
 
             <div class="dshrink-field">
-              <label class="dshrink-field-label">Resolution & Speed</label>
+              <label class="dshrink-field-label">Resolution</label>
               <div class="dshrink-select-wrapper">
                 <select class="dshrink-select" id="dshrink-resolution">
-                  <option value="720" selected>720p HD (Best balance of speed & quality)</option>
+                  <option value="720" selected>720p HD (Balanced)</option>
                   <option value="480">480p SD (Fastest)</option>
                   <option value="original">Original Resolution</option>
                 </select>
@@ -541,7 +478,7 @@
         <div class="dshrink-footer">
           <button class="dshrink-btn-cancel" id="dshrink-cancel-btn">Cancel</button>
           <button class="dshrink-btn-primary" id="dshrink-start-btn">
-            <span>⚡ Squeeze & Attach</span>
+            <span>Compress & Attach</span>
           </button>
         </div>
       </div>
@@ -579,17 +516,13 @@
       durationPill.textContent = formatDuration(videoDuration);
       URL.revokeObjectURL(probeUrl);
 
-      // If video is longer than 2 minutes (like the user's 50-minute sample)
+      // If video is longer than 2 minutes
       if (videoDuration > 120) {
         clipField.style.display = "flex";
         warnContainer.style.display = "block";
         warnContainer.innerHTML = `
-          <div class="dshrink-warn-box">
-            <svg viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
-            <div>
-              <strong>Long video detected (${formatDuration(videoDuration)}).</strong><br/>
-              Discord clips work best at 60s. We recommend clipping to attach in seconds.
-            </div>
+          <div class="dshrink-notice">
+            Long video detected (${formatDuration(videoDuration)}). Selecting a 60s clip is recommended for fast encoding.
           </div>
         `;
       }
@@ -600,7 +533,7 @@
       URL.revokeObjectURL(probeUrl);
     };
 
-    // INSTANT CANCEL - NEVER FREEZES
+    // INSTANT CANCEL
     function cancelAndClose() {
       isAborted = true;
       if (typeof cleanupFn === "function") {
@@ -641,7 +574,7 @@
       warnContainer.style.display = "none";
       progressCard.style.display = "flex";
       startBtn.disabled = true;
-      cancelBtn.textContent = "Cancel Processing";
+      cancelBtn.textContent = "Cancel";
 
       cleanupFn = compressVideo(originalFile, targetMB, resolutionSetting, maxDuration, {
         onProgress: (percent, status) => {
@@ -654,14 +587,14 @@
           if (isAborted) return;
           progressBar.style.width = "100%";
           percentageText.textContent = "100%";
-          statusText.textContent = `Attached ${formatBytes(compressedBlob.size)} to Discord!`;
+          statusText.textContent = `Attached ${formatBytes(compressedBlob.size)} to Discord`;
 
           setTimeout(() => {
             if (!isAborted) {
               attachToDiscord(compressedBlob, originalFile.name);
               cancelAndClose();
             }
-          }, 350);
+          }, 300);
         },
         onError: (err) => {
           if (isAborted) return;
@@ -673,7 +606,7 @@
   }
 
   function compressVideo(file, targetMB, resolutionSetting, maxDuration, callbacks) {
-    callbacks.onProgress(5, "Analyzing video stream...");
+    callbacks.onProgress(5, "Analyzing video...");
 
     const videoEl = document.createElement("video");
     videoEl.preload = "auto";
@@ -719,12 +652,12 @@
       if (height % 2 !== 0) height--;
 
       // Calculate bitrate to strictly fit target size
-      const targetBytes = targetMB * 1024 * 1024 * 0.95; // 5% safe buffer
+      const targetBytes = targetMB * 1024 * 1024 * 0.95;
       const totalBits = targetBytes * 8;
       const totalBitrate = Math.floor(totalBits / targetDuration);
       let videoBitrate = Math.max(180000, totalBitrate - 96000);
 
-      callbacks.onProgress(15, `Encoding at high speed (${width}x${height})...`);
+      callbacks.onProgress(15, `Encoding (${width}x${height})...`);
 
       const canvas = document.createElement("canvas");
       canvas.width = width;
@@ -758,14 +691,14 @@
       };
 
       recorder.start(100);
-      videoEl.playbackRate = 4.0; // 4x speed encoding!
+      videoEl.playbackRate = 4.0; // 4x speed encoding
       videoEl.play();
 
       function drawFrame() {
         if (isStopped) return;
 
         if (videoEl.currentTime >= targetDuration || videoEl.ended || videoEl.paused) {
-          callbacks.onProgress(98, "Finishing video...");
+          callbacks.onProgress(98, "Finalizing...");
           recorder.stop();
           return;
         }
@@ -775,7 +708,7 @@
         const currentProgress = 15 + (videoEl.currentTime / targetDuration) * 80;
         callbacks.onProgress(
           currentProgress,
-          `Optimizing: ${(videoEl.currentTime).toFixed(0)}s / ${targetDuration.toFixed(0)}s`
+          `Encoding: ${(videoEl.currentTime).toFixed(0)}s / ${targetDuration.toFixed(0)}s`
         );
 
         requestAnimationFrame(drawFrame);

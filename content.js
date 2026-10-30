@@ -1,14 +1,199 @@
-// DiscordShrink - Bulletproof Content Script
+// DiscordShrink - Content Script (Self-Contained Shadow DOM & Interception)
 
 (function () {
   "use strict";
 
-  // Look at Discord's real limit: Discord recently updated free limit to 20MB!
-  const DISCORD_LIMIT_BYTES = 19.5 * 1024 * 1024; // 19.5 MB Safe Trigger
+  const DISCORD_LIMIT_BYTES = 19 * 1024 * 1024; // 19 MB
   let activeModalHost = null;
-  let lastAttemptedFile = null;
 
-  console.log("⚡ DiscordShrink v1.0.0 Content Script loaded on Discord Web!");
+  console.log("%c⚡ DiscordShrink v1.0.0 Active!", "background: #5865F2; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;");
+
+  const MODAL_CSS = `
+    :host {
+      all: initial;
+      font-family: "gg sans", "Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      z-index: 2147483647 !important;
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      pointer-events: auto !important;
+    }
+    .dshrink-backdrop {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      animation: dshrink-fade-in 0.2s ease;
+    }
+    .dshrink-modal {
+      position: relative;
+      background-color: #313338;
+      color: #dbdee1;
+      width: 90%;
+      max-width: 440px;
+      border-radius: 8px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      animation: dshrink-scale-in 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      z-index: 10;
+    }
+    .dshrink-header {
+      padding: 16px 20px;
+      background-color: #2b2d31;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .dshrink-icon {
+      width: 28px;
+      height: 28px;
+      fill: #5865f2;
+      flex-shrink: 0;
+    }
+    .dshrink-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 0;
+    }
+    .dshrink-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .dshrink-file-info {
+      background-color: #2b2d31;
+      border-radius: 6px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .dshrink-filename {
+      font-size: 13px;
+      font-weight: 600;
+      color: #f2f3f5;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 240px;
+    }
+    .dshrink-filesize {
+      font-size: 12px;
+      font-weight: 700;
+      color: #fa777c;
+      background-color: rgba(250, 119, 124, 0.12);
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    .dshrink-option-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .dshrink-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #b5bac1;
+    }
+    .dshrink-select {
+      background-color: #1e1f22;
+      color: #dbdee1;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+      padding: 10px 12px;
+      font-size: 14px;
+      outline: none;
+      cursor: pointer;
+    }
+    .dshrink-select:focus {
+      border-color: #5865f2;
+    }
+    .dshrink-progress-container {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .dshrink-progress-bar-bg {
+      width: 100%;
+      height: 8px;
+      background-color: #1e1f22;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .dshrink-progress-bar-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #5865f2, #23a55a);
+      transition: width 0.2s ease;
+    }
+    .dshrink-progress-text {
+      font-size: 12px;
+      font-weight: 600;
+      color: #949ba4;
+      display: flex;
+      justify-content: space-between;
+    }
+    .dshrink-footer {
+      padding: 16px 20px;
+      background-color: #2b2d31;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .dshrink-btn {
+      padding: 10px 18px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: background-color 0.15s ease;
+    }
+    .dshrink-btn-cancel {
+      background-color: transparent;
+      color: #ffffff;
+    }
+    .dshrink-btn-cancel:hover {
+      text-decoration: underline;
+    }
+    .dshrink-btn-primary {
+      background-color: #5865f2;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dshrink-btn-primary:hover {
+      background-color: #4752c4;
+    }
+    .dshrink-btn-primary:disabled {
+      background-color: #35373c;
+      color: #80848e;
+      cursor: not-allowed;
+    }
+    @keyframes dshrink-fade-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes dshrink-scale-in {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+  `;
 
   function formatBytes(bytes) {
     if (!bytes || bytes === 0) return "0 Bytes";
@@ -22,101 +207,50 @@
     if (!file) return false;
     if (file.type && file.type.startsWith("video/")) return true;
     const name = file.name ? file.name.toLowerCase() : "";
-    return /\.(mp4|mov|mkv|webm|avi|flv|wmv|m4v)$/i.test(name);
+    return /\.(mp4|mov|mkv|webm|avi|flv|wmv|m4v|3gp)$/i.test(name);
   }
 
-  // 1. Intercept Drag & Drop
-  window.addEventListener(
-    "dragover",
-    function (e) {
-      // Required to allow drop interception
-      if (e.dataTransfer && e.dataTransfer.types.includes("Files")) {
-        e.preventDefault();
+  // Intercept on BOTH window and document in capture phase
+  function handleIncomingFiles(fileList, eventToCancel) {
+    if (!fileList || fileList.length === 0) return false;
+    const file = fileList[0];
+
+    if (isVideoFile(file) && file.size > DISCORD_LIMIT_BYTES) {
+      if (eventToCancel) {
+        eventToCancel.preventDefault();
+        eventToCancel.stopPropagation();
       }
-    },
-    true
-  );
-
-  window.addEventListener(
-    "drop",
-    function (event) {
-      if (!event.dataTransfer || !event.dataTransfer.files || event.dataTransfer.files.length === 0) return;
-      const file = event.dataTransfer.files[0];
-      lastAttemptedFile = file;
-
-      if (isVideoFile(file) && file.size > DISCORD_LIMIT_BYTES) {
-        event.preventDefault();
-        event.stopPropagation();
-        openShrinkModal(file);
-      }
-    },
-    true // Capture phase
-  );
-
-  // 2. Intercept Paste (e.g. copied video file or screen recording)
-  window.addEventListener(
-    "paste",
-    function (event) {
-      if (!event.clipboardData || !event.clipboardData.files || event.clipboardData.files.length === 0) return;
-      const file = event.clipboardData.files[0];
-      lastAttemptedFile = file;
-
-      if (isVideoFile(file) && file.size > DISCORD_LIMIT_BYTES) {
-        event.preventDefault();
-        event.stopPropagation();
-        openShrinkModal(file);
-      }
-    },
-    true
-  );
-
-  // 3. Intercept "+" File Dialog input
-  document.addEventListener(
-    "change",
-    function (event) {
-      const target = event.target;
-      if (target && target.tagName === "INPUT" && target.type === "file" && target.files && target.files.length > 0) {
-        const file = target.files[0];
-        lastAttemptedFile = file;
-
-        if (isVideoFile(file) && file.size > DISCORD_LIMIT_BYTES) {
-          event.preventDefault();
-          event.stopPropagation();
-          target.value = ""; // Clear so Discord doesn't fire error
-          openShrinkModal(file);
-        }
-      }
-    },
-    true
-  );
-
-  // 4. FOOLPROOF FALLBACK: Watch for Discord's "exceeds size limit" Nitro popup!
-  const observer = new MutationObserver((mutations) => {
-    for (const mutation of mutations) {
-      for (const node of mutation.addedNodes) {
-        if (node.nodeType === Node.ELEMENT_NODE) {
-          const text = node.textContent || "";
-          if (
-            text.includes("exceeds the size limit") ||
-            text.includes("max file size is 20MB") ||
-            text.includes("max file size is 25MB")
-          ) {
-            // Found Discord's error modal! Close it automatically
-            const closeBtn = node.querySelector('[aria-label="Close"]') || node.querySelector("button");
-            if (closeBtn) closeBtn.click();
-            node.remove();
-
-            // Open our DiscordShrink modal with the last attempted file
-            if (lastAttemptedFile) {
-              openShrinkModal(lastAttemptedFile);
-            }
-          }
-        }
-      }
+      openShrinkModal(file);
+      return true;
     }
+    return false;
+  }
+
+  ["dragenter", "dragover"].forEach((evt) => {
+    window.addEventListener(evt, (e) => {
+      e.preventDefault();
+    }, true);
   });
 
-  observer.observe(document.body, { childList: true, subtree: true });
+  window.addEventListener("drop", (e) => {
+    if (e.dataTransfer && e.dataTransfer.files) {
+      handleIncomingFiles(e.dataTransfer.files, e);
+    }
+  }, true);
+
+  window.addEventListener("paste", (e) => {
+    if (e.clipboardData && e.clipboardData.files) {
+      handleIncomingFiles(e.clipboardData.files, e);
+    }
+  }, true);
+
+  document.addEventListener("change", (e) => {
+    if (e.target && e.target.type === "file" && e.target.files) {
+      if (handleIncomingFiles(e.target.files, e)) {
+        e.target.value = ""; // clear input
+      }
+    }
+  }, true);
 
   function openShrinkModal(originalFile) {
     if (activeModalHost) {
@@ -128,10 +262,10 @@
     host.id = "discord-shrink-host";
     const shadow = host.attachShadow({ mode: "open" });
 
-    const styleLink = document.createElement("link");
-    styleLink.rel = "stylesheet";
-    styleLink.href = chrome.runtime.getURL("styles.css");
-    shadow.appendChild(styleLink);
+    // Inject styles directly into shadow root
+    const styleEl = document.createElement("style");
+    styleEl.textContent = MODAL_CSS;
+    shadow.appendChild(styleEl);
 
     const container = document.createElement("div");
     container.innerHTML = `
@@ -154,7 +288,7 @@
             <label class="dshrink-label">Target File Size</label>
             <select class="dshrink-select" id="dshrink-target-size">
               <option value="19.0" selected>19.0 MB (Discord Free Safe Limit)</option>
-              <option value="15.0">15.0 MB (WhatsApp Safe)</option>
+              <option value="15.0">15.0 MB (WhatsApp Friendly)</option>
               <option value="7.5">7.5 MB (Ultra Compact)</option>
             </select>
 
@@ -229,12 +363,12 @@
         onComplete: (compressedBlob) => {
           progressBar.style.width = "100%";
           percentageText.textContent = "100%";
-          statusText.textContent = `Attached ${formatBytes(compressedBlob.size)} video to Discord!`;
+          statusText.textContent = `Attached ${formatBytes(compressedBlob.size)} video!`;
 
           setTimeout(() => {
             attachToDiscord(compressedBlob, originalFile.name);
             closeModal();
-          }, 500);
+          }, 400);
         },
         onError: (err) => {
           statusText.textContent = "Error: " + err.message;

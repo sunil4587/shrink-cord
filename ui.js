@@ -248,10 +248,18 @@
     #dshrink-modal-root .dshrink-file-details {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 5px;
       min-width: 0;
       flex: 1;
       justify-content: center;
+    }
+
+    #dshrink-modal-root .dshrink-file-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      width: 100%;
     }
 
     #dshrink-modal-root .dshrink-filename {
@@ -259,10 +267,36 @@
       font-weight: 600;
       color: #f2f3f5;
       letter-spacing: -0.01em;
-      line-height: 1.35;
+      line-height: 1.3;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      flex: 1;
+      min-width: 0;
+    }
+
+    #dshrink-modal-root .dshrink-overlimit-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #fa777c;
+      background: rgba(242, 63, 67, 0.14);
+      border: 1px solid rgba(242, 63, 67, 0.28);
+      padding: 2px 8px;
+      border-radius: 999px;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      flex-shrink: 0;
+      line-height: 1.2;
+    }
+
+    #dshrink-modal-root .dshrink-overlimit-badge svg {
+      width: 11px;
+      height: 11px;
+      flex-shrink: 0;
+      fill: currentColor;
     }
 
     #dshrink-modal-root .dshrink-file-meta {
@@ -272,7 +306,7 @@
       font-size: 12px;
       color: #949ba4;
       font-weight: 500;
-      line-height: 1.3;
+      line-height: 1.25;
     }
 
     #dshrink-modal-root .dshrink-meta-item {
@@ -288,22 +322,6 @@
     #dshrink-modal-root .dshrink-size-val {
       color: #dbdee1;
       font-weight: 600;
-    }
-
-    #dshrink-modal-root .dshrink-overlimit-badge {
-      display: none;
-      font-size: 10px;
-      font-weight: 700;
-      color: #fa777c;
-      background: rgba(242, 63, 67, 0.15);
-      border: 1px solid rgba(242, 63, 67, 0.35);
-      padding: 1px 6px;
-      border-radius: 4px;
-      margin-left: 4px;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      white-space: nowrap;
-      vertical-align: middle;
     }
 
     /* Option Selectors */
@@ -592,7 +610,13 @@
             ${isAudio ? ICONS.audio : ICONS.video}
           </div>
           <div class="dshrink-file-details">
-            <span class="dshrink-filename" title="${file.name}">${file.name}</span>
+            <div class="dshrink-file-top">
+              <span class="dshrink-filename" title="${file.name}">${file.name}</span>
+              <span class="dshrink-overlimit-badge" id="dshrink-overlimit-badge">
+                <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 10h2v4h-2zm0 6h2v2h-2z"/></svg>
+                <span>Over 20MB</span>
+              </span>
+            </div>
             <div class="dshrink-file-meta">
               <span class="dshrink-meta-item">
                 ${ICONS.clock}
@@ -603,7 +627,6 @@
                 ${ICONS.file}
                 <strong class="dshrink-size-val">${Compressor.formatBytes(file.size)}</strong>
               </span>
-              <span class="dshrink-overlimit-badge" id="dshrink-overlimit-badge">Over 20 MB</span>
             </div>
           </div>
         </div>
@@ -753,7 +776,6 @@
     startBtn.addEventListener("click", function () {
       heroPre.style.display = "none";
       heroProgress.style.display = "flex";
-      overlimitBadge.style.display = "inline-block";
       optionsArea.style.display = "none";
       warnContainer.style.display = "none";
       progressCard.style.display = "flex";

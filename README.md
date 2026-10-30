@@ -3,12 +3,6 @@
 > **Automatically catch oversized videos and audio on Discord Web and shrink them under 20MB right in your browser.**  
 > *100% Client-Side • Zero Cloud Uploads • Open Source (GPLv3) • Zero Telemetry*
 
-## 📸 Preview
-
-| Compression Options | Live Encoding |
-|:-:|:-:|
-| ![ShrinkCord modal with target size and quality options](assets/preview.png) | ![ShrinkCord real-time encoding progress](assets/progress.png) |
-
 [![Manifest V3](https://img.shields.io/badge/Chrome%20Extension-Manifest%20V3-blue?style=flat-square)](https://developer.chrome.com/docs/extensions/mv3/intro/)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-green.svg?style=flat-square)](LICENSE)
 [![Privacy](https://img.shields.io/badge/Privacy-100%25%20Local-success?style=flat-square)](#privacy--security)
@@ -16,11 +10,12 @@
 <br/>
 
 <p align="center">
-  <img src="assets/preview.png" alt="ShrinkCord Modal Interface" width="49%" style="border-radius: 10px;" />
-  <img src="assets/progress.png" alt="ShrinkCord Live Encoding" width="49%" style="border-radius: 10px;" />
+  <img src="assets/preview.png" alt="ShrinkCord Setup Modal" width="48%" />
+  &nbsp;&nbsp;
+  <img src="assets/progress.png" alt="ShrinkCord Live Transcoding" width="48%" />
 </p>
 <p align="center">
-  <em>Left: Auto-detection with size & resolution presets • Right: Live client-side transcoding</em>
+  <em>Left: Auto-detection with size &amp; resolution presets • Right: Live client-side transcoding with synchronized AV</em>
 </p>
 
 ---

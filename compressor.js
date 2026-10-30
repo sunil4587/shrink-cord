@@ -8,43 +8,99 @@
 
   const DISCORD_LIMIT_BYTES = 19 * 1024 * 1024;
   const STANDARD_SAMPLE_RATES = [44100, 32000, 24000, 22050, 16000, 12000, 11025, 8000];
+  const VIDEO_EXT_RE = /\.(mp4|mov|mkv|webm|avi|flv|wmv|m4v|3gp|m4p|mpg|mpeg)$/i;
+  const AUDIO_EXT_RE = /\.(mp3|wav|flac|m4a|aac|ogg|opus|wma|aiff|alac|oga)$/i;
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+
+  const PRESETS = {
+    CLIPS: [
+      { val: "30", label: "30s Clip" },
+      { val: "60", label: "60s Clip" },
+      { val: "120", label: "2 Mins" },
+      { val: "full", label: "Full Video", id: "dshrink-full-btn" }
+    ],
+    SIZES: [
+      { val: 19.0, label: "19 MB (Discord)" },
+      { val: 15.0, label: "15 MB (Mobile)" },
+      { val: 8.0, label: "8 MB (Legacy)" }
+    ],
+    VIDEO_QUALITIES: [
+      { val: "1080", label: "1080p FHD" },
+      { val: "720", label: "720p HD" },
+      { val: "480", label: "480p SD" }
+    ],
+    AUDIO_QUALITIES: [
+      { val: "32000", label: "Studio (32kHz)" },
+      { val: "22050", label: "High (22kHz)" },
+      { val: "voice", label: "Voice (Mono)" }
+    ]
+  };
+
+  function resolveSettings(saved = {}) {
+    const size = parseFloat(saved.targetMB);
+    const vidQual = String(saved.quality || "");
+    const audQual = String(saved.audioQuality || saved.quality || "");
+    return {
+      targetMB: PRESETS.SIZES.some((s) => s.val === size) ? size : 19.0,
+      videoQuality: PRESETS.VIDEO_QUALITIES.some((q) => q.val === vidQual) ? vidQual : "1080",
+      audioQuality: PRESETS.AUDIO_QUALITIES.some((q) => q.val === audQual) ? audQual : "32000"
+    };
+  }
 
   function formatBytes(bytes) {
-    if (!bytes || bytes === 0) return "0 Bytes";
+    if (!bytes || !Number.isFinite(bytes) || bytes <= 0) return "0 Bytes";
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    const i = Math.min(sizes.length - 1, Math.floor(Math.log(bytes) / Math.log(k)));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
   }
 
   function formatDuration(seconds) {
-    if (!seconds || isNaN(seconds)) return "0:00";
+    if (!seconds || !Number.isFinite(seconds) || seconds <= 0) return "0:00";
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}m ${secs < 10 ? "0" : ""}${secs}s`;
   }
 
+  function matchesMedia(file, mimePrefix, extRegex) {
+    return Boolean(
+      file &&
+      ((file.type && file.type.startsWith(mimePrefix)) || (file.name && extRegex.test(file.name)))
+    );
+  }
+
   function isVideoFile(file) {
-    if (!file) return false;
-    if (file.type && file.type.startsWith("video/")) return true;
-    const name = file.name ? file.name.toLowerCase() : "";
-    return /\.(mp4|mov|mkv|webm|avi|flv|wmv|m4v|3gp|m4p|mpg|mpeg)$/i.test(name);
+    return matchesMedia(file, "video/", VIDEO_EXT_RE);
   }
 
   function isAudioFile(file) {
-    if (!file) return false;
-    if (file.type && file.type.startsWith("audio/")) return true;
-    const name = file.name ? file.name.toLowerCase() : "";
-    return /\.(mp3|wav|flac|m4a|aac|ogg|opus|wma|aiff|alac|oga)$/i.test(name);
+    return matchesMedia(file, "audio/", AUDIO_EXT_RE);
   }
 
   function isMediaFile(file) {
     return isVideoFile(file) || isAudioFile(file);
   }
 
-  /**
-   * Probe media duration and thumbnail
-   */
+  function isValidDuration(dur) {
+    return Number.isFinite(dur) && dur > 0 && dur < 1e100;
+  }
+
+  function releaseMediaElement(el) {
+    if (!el) return;
+    el.pause();
+    el.removeAttribute("src");
+    el.load();
+    if (el.parentNode) {
+      el.parentNode.removeChild(el);
+    }
+  }
+
+  function closeAudioContext(ctx) {
+    if (ctx && ctx.state !== "closed") {
+      try { ctx.close().catch(() => {}); } catch (e) {}
+    }
+  }
+
   function probeMedia(file, isAudio) {
     return new Promise((resolve) => {
       const el = document.createElement(isAudio ? "audio" : "video");
@@ -54,54 +110,66 @@
       el.src = url;
 
       let settled = false;
-      const cleanup = () => {
-        if (!settled) {
-          settled = true;
-          URL.revokeObjectURL(url);
-        }
+      const finish = (duration, thumbnailCanvas = null) => {
+        if (settled) return;
+        settled = true;
+        releaseMediaElement(el);
+        URL.revokeObjectURL(url);
+        resolve({ duration: isValidDuration(duration) ? duration : 0, thumbnailCanvas });
       };
 
-      el.onloadedmetadata = () => {
-        const duration = el.duration || 0;
+      const captureThumbnail = (duration) => {
         if (isAudio) {
-          cleanup();
-          resolve({ duration, thumbnailCanvas: null });
-        } else {
-          try {
-            el.currentTime = Math.min(1.0, duration * 0.1);
-            el.onseeked = () => {
+          finish(duration, null);
+          return;
+        }
+        try {
+          el.currentTime = isValidDuration(duration) ? Math.min(1.0, duration * 0.1) : 0.1;
+          el.onseeked = () => {
+            try {
               const canvas = document.createElement("canvas");
               canvas.width = 48;
               canvas.height = 36;
               const ctx = canvas.getContext("2d");
-              ctx.drawImage(el, 0, 0, 48, 36);
-              cleanup();
-              resolve({ duration, thumbnailCanvas: canvas });
-            };
+              const vw = el.videoWidth || 48;
+              const vh = el.videoHeight || 36;
+              const scale = Math.max(48 / vw, 36 / vh);
+              const dw = vw * scale;
+              const dh = vh * scale;
+              ctx.drawImage(el, (48 - dw) / 2, (36 - dh) / 2, dw, dh);
+              finish(duration, canvas);
+            } catch (err) {
+              finish(duration, null);
+            }
+          };
+        } catch (e) {
+          finish(duration, null);
+        }
+      };
+
+      el.onloadedmetadata = () => {
+        if (!isValidDuration(el.duration)) {
+          el.ondurationchange = () => {
+            if (isValidDuration(el.duration)) {
+              el.ondurationchange = null;
+              captureThumbnail(el.duration);
+            }
+          };
+          try {
+            el.currentTime = 1e101;
           } catch (e) {
-            cleanup();
-            resolve({ duration, thumbnailCanvas: null });
+            captureThumbnail(0);
           }
+          return;
         }
+        captureThumbnail(el.duration);
       };
 
-      el.onerror = () => {
-        cleanup();
-        resolve({ duration: 0, thumbnailCanvas: null });
-      };
-
-      setTimeout(() => {
-        if (!settled) {
-          cleanup();
-          resolve({ duration: 0, thumbnailCanvas: null });
-        }
-      }, 3000);
+      el.onerror = () => finish(0, null);
+      setTimeout(() => finish(el.duration, null), 3000);
     });
   }
 
-  /**
-   * Generates a 16-bit PCM RIFF WAV Blob from an AudioBuffer.
-   */
   function audioBufferToWavBlob(buffer) {
     const numChannels = buffer.numberOfChannels;
     const sampleRate = buffer.sampleRate;
@@ -110,9 +178,7 @@
     const blockAlign = numChannels * bytesPerSample;
     const numFrames = buffer.length;
     const dataSize = numFrames * blockAlign;
-    const bufferLength = 44 + dataSize;
-
-    const arrayBuffer = new ArrayBuffer(bufferLength);
+    const arrayBuffer = new ArrayBuffer(44 + dataSize);
     const view = new DataView(arrayBuffer);
 
     function writeString(offset, string) {
@@ -143,10 +209,8 @@
 
     for (let i = 0; i < numFrames; i++) {
       for (let c = 0; c < numChannels; c++) {
-        let sample = channels[c][i];
-        sample = Math.max(-1, Math.min(1, sample));
-        const intSample = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
-        view.setInt16(offset, intSample, true);
+        const sample = Math.max(-1, Math.min(1, channels[c][i]));
+        view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
         offset += 2;
       }
     }
@@ -154,9 +218,6 @@
     return new Blob([arrayBuffer], { type: "audio/wav" });
   }
 
-  /**
-   * Hardware-speed Audio Compression using Web Audio API + OfflineAudioContext.
-   */
   function compressAudio(file, targetMB, qualitySetting, maxDuration, callbacks) {
     let isStopped = false;
 
@@ -165,56 +226,48 @@
     file.arrayBuffer().then(async (arrayBuffer) => {
       if (isStopped) return;
 
+      let audioCtx = null;
       try {
-        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        const audioCtx = new AudioContextClass();
+        audioCtx = new AudioContextClass();
         const decodedBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-        audioCtx.close();
+        closeAudioContext(audioCtx);
+        audioCtx = null;
 
         if (isStopped) return;
 
-        callbacks.onProgress(45, "Resampling audio...", "Optimizing sample rate to fit 19MB...");
+        callbacks.onProgress(45, "Resampling audio...", `Optimizing sample rate to fit ${targetMB}MB...`);
 
         const totalDuration = decodedBuffer.duration;
         let duration = (maxDuration && maxDuration > 0 && maxDuration < totalDuration) ? maxDuration : totalDuration;
-        const targetBytes = targetMB * 1024 * 1024 * 0.92;
+        const targetBytes = (targetMB * 1024 * 1024 * 0.94) - 44;
 
         let channels = qualitySetting === "voice" ? 1 : Math.min(2, decodedBuffer.numberOfChannels);
-        let sampleRate = 32000;
-        if (qualitySetting === "voice" || qualitySetting === "22050") {
-          sampleRate = 22050;
-        } else if (qualitySetting === "32000") {
-          sampleRate = 32000;
-        }
+        const preferredRate = (qualitySetting === "voice" || qualitySetting === "22050") ? 22050 : 32000;
+        let sampleRate = preferredRate;
 
-        if (duration * sampleRate * channels * 2 > targetBytes) {
-          if (duration * 8000 * channels * 2 > targetBytes && channels > 1) {
+        const fitsTarget = (rate, ch) => duration * rate * ch * 2 <= targetBytes;
+
+        if (!fitsTarget(sampleRate, channels)) {
+          const stereoMatch = STANDARD_SAMPLE_RATES.find((r) => r <= preferredRate && r >= 22050 && fitsTarget(r, channels));
+          if (stereoMatch) {
+            sampleRate = stereoMatch;
+          } else {
             channels = 1;
+            sampleRate = STANDARD_SAMPLE_RATES.find((r) => r <= preferredRate && fitsTarget(r, 1)) || 8000;
           }
-          let chosenRate = 8000;
-          for (const rate of STANDARD_SAMPLE_RATES) {
-            if (duration * rate * channels * 2 <= targetBytes) {
-              chosenRate = rate;
-              break;
-            }
-          }
-          sampleRate = chosenRate;
 
-          if (duration * sampleRate * channels * 2 > targetBytes) {
+          if (!fitsTarget(sampleRate, channels)) {
             duration = Math.floor(targetBytes / (sampleRate * channels * 2));
           }
         }
 
-        const offlineCtx = new OfflineAudioContext(
-          channels,
-          Math.ceil(duration * sampleRate),
-          sampleRate
-        );
+        const frameCount = Math.max(1, Math.ceil(duration * sampleRate));
+        const offlineCtx = new OfflineAudioContext(channels, frameCount, sampleRate);
 
         const source = offlineCtx.createBufferSource();
         source.buffer = decodedBuffer;
         source.connect(offlineCtx.destination);
-        source.start(0);
+        source.start(0, 0, duration);
 
         const renderedBuffer = await offlineCtx.startRendering();
 
@@ -226,10 +279,15 @@
         callbacks.onProgress(100, "Audio ready!", "Attaching to Discord...");
         callbacks.onComplete(wavBlob);
       } catch (err) {
-        callbacks.onError(new Error("Audio decoding failed: " + err.message));
+        closeAudioContext(audioCtx);
+        if (!isStopped) {
+          callbacks.onError(new Error("Audio decoding failed: " + err.message));
+        }
       }
     }).catch((err) => {
-      callbacks.onError(new Error("Unable to read audio file: " + err.message));
+      if (!isStopped) {
+        callbacks.onError(new Error("Unable to read audio file: " + err.message));
+      }
     });
 
     return function cleanup() {
@@ -237,10 +295,7 @@
     };
   }
 
-  /**
-   * Video Compression Engine with Web Audio track mixing and WebM duration patching.
-   */
-  function compressVideo(file, targetMB, resolutionSetting, maxDuration, callbacks) {
+  function compressVideo(file, targetMB, resolutionSetting, maxDuration, callbacks, hostElement) {
     callbacks.onProgress(5, "Preparing video & audio stream...", "Initializing media pipeline...");
 
     const videoEl = document.createElement("video");
@@ -249,106 +304,121 @@
     videoEl.playsInline = true;
     videoEl.muted = false;
     videoEl.volume = 1.0;
+    if (hostElement) {
+      videoEl.style.cssText = "position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 1; z-index: 1; pointer-events: none;";
+      hostElement.appendChild(videoEl);
+    } else {
+      videoEl.style.cssText = "position: fixed; bottom: 4px; right: 4px; width: 64px; height: 48px; opacity: 0.01; z-index: 2147483647; pointer-events: none;";
+      document.body.appendChild(videoEl);
+    }
+
     const fileUrl = URL.createObjectURL(file);
     videoEl.src = fileUrl;
 
     let isStopped = false;
+    let rvfcId = null;
     let animFrameId = null;
+    let fallbackInterval = null;
+    let frameCounter = 0;
     let recorder = null;
     let audioCtx = null;
     let isFinishing = false;
 
-    function cleanup() {
-      isStopped = true;
+    function stopFrameLoop() {
+      if (fallbackInterval) {
+        clearInterval(fallbackInterval);
+        fallbackInterval = null;
+      }
       if (animFrameId) {
         cancelAnimationFrame(animFrameId);
         animFrameId = null;
       }
-      if (videoEl) {
-        videoEl.pause();
-        videoEl.removeAttribute("src");
-        videoEl.load();
+      if (rvfcId && "cancelVideoFrameCallback" in videoEl) {
+        try { videoEl.cancelVideoFrameCallback(rvfcId); } catch (e) {}
+        rvfcId = null;
       }
-      if (audioCtx && audioCtx.state !== "closed") {
-        try { audioCtx.close(); } catch (e) {}
+    }
+
+    function cleanup() {
+      if (isStopped) return;
+      isStopped = true;
+      stopFrameLoop();
+      if (recorder && recorder.state !== "inactive") {
+        try { recorder.stop(); } catch (e) {}
       }
+      releaseMediaElement(videoEl);
+      closeAudioContext(audioCtx);
       URL.revokeObjectURL(fileUrl);
     }
 
     videoEl.onloadedmetadata = function () {
       if (isStopped) return;
 
-      const duration = (maxDuration && maxDuration > 0) ? Math.min(videoEl.duration, maxDuration) : videoEl.duration;
-      let targetWidth = videoEl.videoWidth || 1280;
-      let targetHeight = videoEl.videoHeight || 720;
+      const rawDuration = isValidDuration(videoEl.duration)
+        ? videoEl.duration
+        : Math.max(10, Math.min(300, file.size / (512 * 1024)));
+      const duration = (maxDuration && maxDuration > 0) ? Math.min(rawDuration, maxDuration) : rawDuration;
 
-      if (resolutionSetting === "720") {
-        if (targetHeight > 720) {
-          targetWidth = Math.round((targetWidth * 720) / targetHeight);
-          targetHeight = 720;
-        }
-      } else if (resolutionSetting === "480") {
-        if (targetHeight > 480) {
-          targetWidth = Math.round((targetWidth * 480) / targetHeight);
-          targetHeight = 480;
-        }
+      const targetTotalBits = targetMB * 8 * 1024 * 1024 * 0.92;
+      const totalAvailableBps = Math.floor(targetTotalBits / Math.max(1, duration));
+      const audioBps = totalAvailableBps < 250000 ? 48000 : (totalAvailableBps < 500000 ? 64000 : 96000);
+      const videoBps = Math.max(80000, Math.min(totalAvailableBps - audioBps, 8500000));
+
+      let targetWidth = videoEl.videoWidth || 1920;
+      let targetHeight = videoEl.videoHeight || 1080;
+      let maxShortEdge = parseInt(resolutionSetting, 10) || 1080;
+
+      if (videoBps < 220000 && maxShortEdge > 360) maxShortEdge = 360;
+      else if (videoBps < 450000 && maxShortEdge > 480) maxShortEdge = 480;
+      else if (videoBps < 900000 && maxShortEdge > 720) maxShortEdge = 720;
+
+      const currentShortEdge = Math.min(targetWidth, targetHeight);
+      if (currentShortEdge > maxShortEdge) {
+        const scale = maxShortEdge / currentShortEdge;
+        targetWidth = Math.round(targetWidth * scale);
+        targetHeight = Math.round(targetHeight * scale);
       }
 
-      targetWidth = targetWidth % 2 === 0 ? targetWidth : targetWidth - 1;
-      targetHeight = targetHeight % 2 === 0 ? targetHeight : targetHeight - 1;
-
-      const targetTotalBits = targetMB * 8 * 1024 * 1024 * 0.88;
-      const audioBps = 96000;
-      let videoBps = Math.floor((targetTotalBits / duration) - audioBps);
-      videoBps = Math.max(150000, Math.min(videoBps, 3000000));
+      targetWidth = Math.max(2, targetWidth & ~1);
+      targetHeight = Math.max(2, targetHeight & ~1);
 
       const canvas = document.createElement("canvas");
       canvas.width = targetWidth;
       canvas.height = targetHeight;
-      const ctx = canvas.getContext("2d", { alpha: false, desynchronized: true });
+      const ctx = canvas.getContext("2d", { alpha: false });
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
 
       const canvasStream = canvas.captureStream(30);
-      const combinedTracks = [...canvasStream.getVideoTracks()];
+      const videoTrack = canvasStream.getVideoTracks()[0];
+      const combinedTracks = videoTrack ? [videoTrack] : [];
 
-      // Audio track extraction
-      let audioTrack = null;
       try {
-        const stream = videoEl.captureStream ? videoEl.captureStream() : (videoEl.mozCaptureStream ? videoEl.mozCaptureStream() : null);
-        if (stream) {
-          const aTracks = stream.getAudioTracks();
-          if (aTracks && aTracks.length > 0) audioTrack = aTracks[0];
-        }
-      } catch (e) {}
-
-      if (!audioTrack) {
-        try {
-          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
           audioCtx = new AudioContextClass();
           const sourceNode = audioCtx.createMediaElementSource(videoEl);
           const destinationNode = audioCtx.createMediaStreamDestination();
           sourceNode.connect(destinationNode);
-          const aTracks = destinationNode.stream.getAudioTracks();
-          if (aTracks && aTracks.length > 0) audioTrack = aTracks[0];
-        } catch (e) {}
-      }
 
-      if (audioTrack) {
-        combinedTracks.push(audioTrack);
+          const muteGain = audioCtx.createGain();
+          muteGain.gain.value = 0.0;
+          sourceNode.connect(muteGain);
+          muteGain.connect(audioCtx.destination);
+
+          const aTrack = destinationNode.stream.getAudioTracks()[0];
+          if (aTrack) combinedTracks.push(aTrack);
+        }
+      } catch (audioErr) {
+        videoEl.muted = true;
       }
 
       const combinedStream = new MediaStream(combinedTracks);
-
-      let mimeType = "video/webm;codecs=vp8,opus";
-      if (!MediaRecorder.isTypeSupported(mimeType)) {
-        mimeType = "video/webm;codecs=vp9,opus";
-      }
-      if (!MediaRecorder.isTypeSupported(mimeType)) {
-        mimeType = "video/webm";
-      }
+      const mimeType = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"]
+        .find((type) => MediaRecorder.isTypeSupported(type)) || "video/webm";
 
       try {
         recorder = new MediaRecorder(combinedStream, {
-          mimeType: mimeType,
+          mimeType,
           videoBitsPerSecond: videoBps,
           audioBitsPerSecond: audioBps
         });
@@ -365,14 +435,16 @@
         }
       };
 
+      recorder.onerror = function (e) {
+        if (isStopped || isFinishing) return;
+        callbacks.onError(new Error((e && e.error && e.error.message) || "MediaRecorder encoding failed"));
+        cleanup();
+      };
+
       function finishRecording() {
         if (isFinishing || isStopped) return;
         isFinishing = true;
-
-        if (animFrameId) {
-          cancelAnimationFrame(animFrameId);
-          animFrameId = null;
-        }
+        stopFrameLoop();
 
         videoEl.pause();
         ctx.drawImage(videoEl, 0, 0, targetWidth, targetHeight);
@@ -380,31 +452,74 @@
 
         if (recorder && recorder.state !== "inactive") {
           recorder.onstop = async function () {
-            // STOP tracks AFTER recorder has safely finished flushing chunks
             combinedStream.getTracks().forEach((track) => track.stop());
 
             if (chunks.length > 0) {
               let finalBlob = new Blob(chunks, { type: mimeType });
               try {
-                const durationMs = Math.round(Math.min(videoEl.currentTime, duration) * 1000);
+                const recordedMs = Math.round(Math.min(videoEl.currentTime || duration, duration) * 1000);
                 const patcher = window.ysFixWebmDuration || window.fixWebmDuration;
-                if (durationMs > 0 && typeof patcher === "function") {
-                  finalBlob = await patcher(finalBlob, durationMs);
+                if (recordedMs > 0 && typeof patcher === "function") {
+                  const patched = await patcher(finalBlob, recordedMs, { logger: false });
+                  if (patched && patched.size > 0) finalBlob = patched;
                 }
-              } catch (err) {
-                console.warn("WebM duration patch skipped:", err);
-              }
+              } catch (err) {}
               callbacks.onComplete(finalBlob);
             } else {
               callbacks.onError(new Error("Compression failed: empty output"));
             }
             cleanup();
           };
-
-          try { recorder.requestData(); } catch (err) {}
           recorder.stop();
         } else {
           cleanup();
+        }
+      }
+
+      function drawCurrentFrame() {
+        if (isStopped || isFinishing || videoEl.paused || videoEl.ended) return;
+
+        if (videoEl.currentTime >= duration || videoEl.ended) {
+          finishRecording();
+          return;
+        }
+
+        ctx.drawImage(videoEl, 0, 0, targetWidth, targetHeight);
+        ctx.fillStyle = (frameCounter++ % 2 === 0) ? "rgba(0,0,0,0.01)" : "rgba(0,0,0,0.02)";
+        ctx.fillRect(0, 0, 1, 1);
+
+        if (videoTrack && typeof videoTrack.requestFrame === "function") {
+          try { videoTrack.requestFrame(); } catch (e) {}
+        }
+
+        const percent = Math.min(95, Math.max(5, (videoEl.currentTime / duration) * 95));
+        const currentSec = Math.floor(videoEl.currentTime);
+        const totalSec = Math.floor(duration);
+
+        callbacks.onProgress(
+          percent,
+          `Encoding: ${currentSec}s / ${totalSec}s`,
+          `HD video & audio in sync • ~${Math.max(0, totalSec - currentSec)}s left`
+        );
+      }
+
+      function scheduleNextFrame() {
+        if ("requestVideoFrameCallback" in videoEl) {
+          rvfcId = videoEl.requestVideoFrameCallback(onVideoFrame);
+        } else {
+          animFrameId = requestAnimationFrame(onVideoFrame);
+        }
+      }
+
+      function onVideoFrame() {
+        if (isStopped || isFinishing) return;
+        drawCurrentFrame();
+        scheduleNextFrame();
+      }
+
+      function resumeAudioContext() {
+        if (audioCtx && audioCtx.state === "suspended") {
+          try { audioCtx.resume(); } catch (e) {}
         }
       }
 
@@ -413,46 +528,21 @@
       videoEl.currentTime = 0;
 
       videoEl.onplay = function () {
-        if (audioCtx && audioCtx.state === "suspended") {
-          try { audioCtx.resume(); } catch (e) {}
+        resumeAudioContext();
+        if (recorder && recorder.state === "inactive") {
+          recorder.start();
         }
-
-        recorder.start(250);
-
-        function drawFrame() {
-          if (isStopped || isFinishing) return;
-
-          if (videoEl.currentTime >= duration || videoEl.ended) {
-            finishRecording();
-            return;
-          }
-
-          ctx.drawImage(videoEl, 0, 0, targetWidth, targetHeight);
-          const percent = Math.min(95, Math.max(5, (videoEl.currentTime / duration) * 95));
-          const currentSec = Math.floor(videoEl.currentTime);
-          const totalSec = Math.floor(duration);
-          const remainingSec = Math.max(0, totalSec - currentSec);
-
-          callbacks.onProgress(
-            percent,
-            `Encoding: ${currentSec}s / ${totalSec}s`,
-            `HD video & audio in sync • ~${remainingSec}s left`
-          );
-
-          if ("requestVideoFrameCallback" in videoEl) {
-            videoEl.requestVideoFrameCallback(drawFrame);
-          } else {
-            animFrameId = requestAnimationFrame(drawFrame);
-          }
+        if (!fallbackInterval) {
+          fallbackInterval = setInterval(() => {
+            if (!isStopped && !isFinishing && !videoEl.paused && !videoEl.ended) {
+              drawCurrentFrame();
+            }
+          }, 33);
         }
-
-        if ("requestVideoFrameCallback" in videoEl) {
-          videoEl.requestVideoFrameCallback(drawFrame);
-        } else {
-          animFrameId = requestAnimationFrame(drawFrame);
-        }
+        scheduleNextFrame();
       };
 
+      resumeAudioContext();
       videoEl.play().catch(function (err) {
         callbacks.onError(new Error("Unable to decode video: " + err.message));
         cleanup();
@@ -467,10 +557,11 @@
     return cleanup;
   }
 
-  // Export to namespace
   window.DiscordShrink = window.DiscordShrink || {};
   window.DiscordShrink.Compressor = {
     DISCORD_LIMIT_BYTES,
+    PRESETS,
+    resolveSettings,
     formatBytes,
     formatDuration,
     isVideoFile,

@@ -4,25 +4,6 @@
   <meta charset="UTF-8">
   <title>DiscordShrink Settings</title>
   <style>
-    @font-face {
-      font-family: "gg sans";
-      font-style: normal;
-      font-weight: 400;
-      src: url("https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/ggsans-normal-400.woff2") format("woff2");
-    }
-    @font-face {
-      font-family: "gg sans";
-      font-style: normal;
-      font-weight: 600;
-      src: url("https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/ggsans-normal-600.woff2") format("woff2");
-    }
-    @font-face {
-      font-family: "gg sans";
-      font-style: normal;
-      font-weight: 700;
-      src: url("https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/ggsans-normal-700.woff2") format("woff2");
-    }
-
     body {
       margin: 0;
       padding: 0;
@@ -184,11 +165,20 @@
     </div>
 
     <div class="setting-group">
-      <label class="label" for="default-quality">Default Resolution</label>
+      <label class="label" for="default-quality">Default Video Quality</label>
       <select id="default-quality">
+        <option value="1080">1080p FHD (Crisp Quality)</option>
         <option value="720">720p HD (Balanced)</option>
-        <option value="480">480p SD (Fast)</option>
-        <option value="original">Original Resolution</option>
+        <option value="480">480p SD (Compact)</option>
+      </select>
+    </div>
+
+    <div class="setting-group">
+      <label class="label" for="default-audio-quality">Default Audio Quality</label>
+      <select id="default-audio-quality">
+        <option value="32000">Studio (32kHz Stereo)</option>
+        <option value="22050">High (22kHz Stereo)</option>
+        <option value="voice">Voice (Mono)</option>
       </select>
     </div>
   </div>

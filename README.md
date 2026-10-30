@@ -42,21 +42,22 @@ Until the extension is published on the Chrome Web Store, you can install it loc
 4. Toggle **"Developer mode"** ON in the top-right corner.
 5. Click **"Load unpacked"** in the top-left corner.
 6. Select the `discord-shrink` folder.
-7. Open [Discord Web](https://discord.com/app), drag any video larger than 25MB into a chat, and watch the magic happen!
+7. Open [Discord Web](https://discord.com/app), drag any video or audio file larger than 20MB into a chat, and watch the magic happen!
 
 ---
 
 ## ⚙️ Configuration
 Click the DiscordShrink icon in your Chrome toolbar to customize:
-* **Default Target Size:** `24.0 MB` (Discord Free default), `15.0 MB` (WhatsApp), or `7.5 MB`.
-* **Resolution Mode:** Auto 720p (recommended balance), 480p (fastest encode), or Keep Original.
+* **Default Target Size:** `19.0 MB` (Discord Free safe limit), `15.0 MB` (Mobile / WhatsApp), or `8.0 MB` (Legacy).
+* **Default Video Quality:** `1080p FHD` (crisp quality), `720p HD` (balanced), or `480p SD` (compact).
+* **Default Audio Quality:** `Studio (32kHz)`, `High (22kHz)`, or `Voice (Mono)`.
 
 ---
 
 ## 🗺️ Roadmap
 - [x] Manifest V3 content script interception on Discord Web.
-- [x] Discord dark-mode styled Shadow DOM modal.
-- [x] Automatic bitrate & resolution calculator.
+- [x] Native Discord dark-mode styled modal with live preview.
+- [x] Automatic bitrate, sample rate & resolution calculator with WebM duration patching.
 - [ ] Vencord / BetterDiscord plugin port for the standalone Desktop client.
 - [ ] Firefox Add-on release.
 

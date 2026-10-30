@@ -1,4 +1,4 @@
-// DiscordShrink - Content Script (Native Discord Segmented Controls & Sleek UI)
+// DiscordShrink - Content Script (Native Discord UI + Full Audio & Smooth Video)
 
 (function () {
   "use strict";
@@ -433,7 +433,7 @@
 
     let isAborted = false;
     let cleanupFn = null;
-    let selectedClip = 60; // default 60s
+    let selectedClip = "full";
     let selectedSize = 19.0;
     let selectedRes = "720";
     let videoDuration = 0;
@@ -531,7 +531,7 @@
             <div class="dshrink-progress-track">
               <div class="dshrink-progress-bar" id="dshrink-progress-bar"></div>
             </div>
-            <span class="dshrink-progress-subtext" id="dshrink-progress-subtext">Optimizing frames at high speed...</span>
+            <span class="dshrink-progress-subtext" id="dshrink-progress-subtext">Optimizing frames and audio...</span>
           </div>
         </div>
 
@@ -605,21 +605,21 @@
         fullBtn.textContent = `Full (${formatted})`;
       }
 
-      // If video is longer than 2 minutes, show clip options
+      // If video is longer than 2 minutes, show clip options and default to 60s
       if (videoDuration > 120) {
         clipGroup.style.display = "flex";
-        selectedClip = 60; // default 60s
+        selectedClip = 60; // default 60s clip for long videos
         warnContainer.style.display = "block";
         warnContainer.innerHTML = `
           <div class="dshrink-notice">
-            Long video detected (${formatted}). 60s clip is pre-selected for fast 15-second compression.
+            Long video detected (${formatted}). 60s clip is pre-selected for fast compression.
           </div>
         `;
       } else {
-        selectedClip = videoDuration;
+        selectedClip = "full"; // for short videos (e.g. 30s), keep full video!
       }
 
-      // Try capturing a crisp thumbnail from the video
+      // Capture a thumbnail from the video
       try {
         probeVideo.currentTime = Math.min(1.0, videoDuration * 0.1);
         probeVideo.onseeked = () => {
@@ -697,14 +697,14 @@
           progressBar.style.width = "100%";
           percentageText.textContent = "100%";
           statusText.textContent = `Attached ${formatBytes(compressedBlob.size)} to Discord`;
-          subtextEl.textContent = "Completed successfully";
+          subtextEl.textContent = "Audio and video ready";
 
           setTimeout(() => {
             if (!isAborted) {
               attachToDiscord(compressedBlob, originalFile.name);
               cancelAndClose();
             }
-          }, 300);
+          }, 350);
         },
         onError: (err) => {
           if (isAborted) return;
@@ -716,17 +716,43 @@
   }
 
   function compressVideo(file, targetMB, resolutionSetting, maxDuration, callbacks) {
-    callbacks.onProgress(5, "Analyzing video stream...", "Preparing encoder...");
+    callbacks.onProgress(5, "Preparing video & audio stream...", "Initializing audio pipeline...");
 
     const videoEl = document.createElement("video");
     videoEl.preload = "auto";
-    videoEl.muted = true;
+    videoEl.crossOrigin = "anonymous";
     videoEl.playsInline = true;
+    // Set unmuted with full volume so Web Audio can extract stereo track
+    videoEl.muted = false;
+    videoEl.volume = 1.0;
     const fileUrl = URL.createObjectURL(file);
     videoEl.src = fileUrl;
 
     let isStopped = false;
     let recorder = null;
+    let audioCtx = null;
+    let audioTrack = null;
+
+    // Web Audio extraction (routes audio exclusively to recorder, not computer speakers)
+    try {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (AudioContextClass) {
+        audioCtx = new AudioContextClass();
+        if (audioCtx.state === "suspended") {
+          audioCtx.resume();
+        }
+        const sourceNode = audioCtx.createMediaElementSource(videoEl);
+        const destNode = audioCtx.createMediaStreamDestination();
+        sourceNode.connect(destNode);
+        // Note: Do NOT connect to audioCtx.destination, so user hears zero noise while compressing!
+        const tracks = destNode.stream.getAudioTracks();
+        if (tracks && tracks.length > 0) {
+          audioTrack = tracks[0];
+        }
+      }
+    } catch (err) {
+      console.warn("Audio extraction fallback:", err);
+    }
 
     function cleanup() {
       isStopped = true;
@@ -734,6 +760,11 @@
         videoEl.pause();
         videoEl.removeAttribute("src");
         videoEl.load();
+      } catch (e) {}
+      try {
+        if (audioCtx && audioCtx.state !== "closed") {
+          audioCtx.close();
+        }
       } catch (e) {}
       try {
         if (recorder && recorder.state !== "inactive") {
@@ -751,6 +782,7 @@
       let width = videoEl.videoWidth || 1280;
       let height = videoEl.videoHeight || 720;
 
+      // Downscale proportionally to fit selected resolution
       if (resolutionSetting === "720" && height > 720) {
         width = Math.round((width * 720) / height);
         height = 720;
@@ -761,29 +793,42 @@
       if (width % 2 !== 0) width--;
       if (height % 2 !== 0) height--;
 
-      const targetBytes = targetMB * 1024 * 1024 * 0.95;
+      // Calculate bitrates
+      const targetBytes = targetMB * 1024 * 1024 * 0.93; // 7% safe margin
       const totalBits = targetBytes * 8;
       const totalBitrate = Math.floor(totalBits / targetDuration);
-      let videoBitrate = Math.max(180000, totalBitrate - 96000);
+      const audioBitrate = audioTrack ? 128000 : 0;
+      let videoBitrate = Math.max(250000, totalBitrate - audioBitrate);
 
-      callbacks.onProgress(15, `Encoding video...`, `Target: ${width}x${height} • Limit: ${targetMB} MB`);
+      callbacks.onProgress(10, `Optimizing media streams...`, `Encoding ${width}x${height} with stereo audio`);
 
       const canvas = document.createElement("canvas");
       canvas.width = width;
       canvas.height = height;
       const ctx = canvas.getContext("2d");
-      const stream = canvas.captureStream(24);
+      
+      // 30 fps smooth video capture
+      const canvasStream = canvas.captureStream(30);
+
+      // Combine video track + audio track
+      const outputTracks = [canvasStream.getVideoTracks()[0]];
+      if (audioTrack) {
+        outputTracks.push(audioTrack);
+      }
+      const combinedStream = new MediaStream(outputTracks);
 
       let mimeType = "video/webm;codecs=vp8,opus";
+      if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = "video/webm;codecs=vp9,opus";
       if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = "video/webm";
 
       try {
-        recorder = new MediaRecorder(stream, {
+        recorder = new MediaRecorder(combinedStream, {
           mimeType: mimeType,
-          videoBitsPerSecond: videoBitrate
+          videoBitsPerSecond: videoBitrate,
+          audioBitsPerSecond: 128000
         });
       } catch (e) {
-        recorder = new MediaRecorder(stream);
+        recorder = new MediaRecorder(combinedStream);
       }
 
       const chunks = [];
@@ -792,7 +837,7 @@
       };
 
       recorder.onstop = () => {
-        URL.revokeObjectURL(fileUrl);
+        cleanup();
         if (!isStopped) {
           const finalBlob = new Blob(chunks, { type: "video/webm" });
           callbacks.onComplete(finalBlob);
@@ -800,39 +845,64 @@
       };
 
       recorder.start(100);
-      videoEl.playbackRate = 4.0; // 4x speed encoding
-      videoEl.play();
+
+      // Play at normal 1.0x speed: zero frame drops, zero freeze, perfect audio pitch and lip-sync!
+      videoEl.playbackRate = 1.0;
+      videoEl.currentTime = 0;
+      
+      const playPromise = videoEl.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.warn("Video play error:", err);
+        });
+      }
+
+      let isFinished = false;
+
+      function finishEncoding() {
+        if (isFinished) return;
+        isFinished = true;
+        callbacks.onProgress(98, "Finalizing compressed video...", "Attaching to Discord...");
+        try {
+          if (recorder && recorder.state !== "inactive") {
+            recorder.stop();
+          }
+        } catch (e) {}
+      }
 
       function drawFrame() {
-        if (isStopped) return;
+        if (isStopped || isFinished) return;
 
-        if (videoEl.currentTime >= targetDuration || videoEl.ended || videoEl.paused) {
-          callbacks.onProgress(98, "Finalizing file...", "Attaching to Discord...");
-          recorder.stop();
+        // Check if finished
+        if (videoEl.ended || videoEl.currentTime >= targetDuration) {
+          finishEncoding();
           return;
         }
 
+        // Draw frame onto canvas
         ctx.drawImage(videoEl, 0, 0, width, height);
 
-        const currentProgress = 15 + (videoEl.currentTime / targetDuration) * 80;
-        const currentSec = Math.floor(videoEl.currentTime);
-        const totalSec = Math.floor(targetDuration);
-        const remaining = Math.max(0, Math.round((totalSec - currentSec) / 4));
+        const currentSec = videoEl.currentTime;
+        const currentProgress = 10 + (currentSec / targetDuration) * 88;
+        const remainingSec = Math.max(0, Math.ceil(targetDuration - currentSec));
 
         callbacks.onProgress(
           currentProgress,
-          `Encoding: ${currentSec}s / ${totalSec}s`,
-          `Running at 4x speed • ~${remaining}s remaining`
+          `Encoding: ${Math.floor(currentSec)}s / ${Math.floor(targetDuration)}s`,
+          audioTrack 
+            ? `HD video & audio in sync • ~${remainingSec}s left` 
+            : `HD video • ~${remainingSec}s left`
         );
 
         requestAnimationFrame(drawFrame);
       }
 
       videoEl.onplay = () => requestAnimationFrame(drawFrame);
+      videoEl.onended = () => finishEncoding();
     };
 
     videoEl.onerror = () => {
-      URL.revokeObjectURL(fileUrl);
+      cleanup();
       if (!isStopped) callbacks.onError(new Error("Unable to decode video format."));
     };
 

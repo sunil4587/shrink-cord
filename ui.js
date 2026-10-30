@@ -13,7 +13,7 @@
   const ICONS = {
     zap: `<svg class="dshrink-btn-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`,
     close: `<svg viewBox="0 0 24 24"><path fill="currentColor" d="M18.4 4L12 10.4L5.6 4L4 5.6L10.4 12L4 18.4L5.6 20L12 13.6L18.4 20L20 18.4L13.6 12L20 5.6L18.4 4Z"/></svg>`,
-    clock: `<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 10.59V7a1 1 0 0 0-2 0v5a1 1 0 0 0 .29.71l3 3a1 1 0 0 0 1.42-1.42z"/></svg>`,
+    clock: `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
     file: `<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm0 1.5L18.5 8H14zM6 20V4h6v6h6v10z"/></svg>`,
     audio: `<svg class="dshrink-file-icon" viewBox="0 0 24 24" fill="none" stroke="#5865f2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`,
     video: `<svg class="dshrink-file-icon" viewBox="0 0 24 24" fill="none" stroke="#5865f2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2" ry="2"/></svg>`
@@ -289,15 +289,18 @@
 
     #dshrink-modal-root .dshrink-overlimit-badge {
       display: none;
-      font-size: 11.5px;
-      font-weight: 600;
+      font-size: 10px;
+      font-weight: 700;
       color: #fa777c;
-      background: rgba(242, 63, 67, 0.12);
-      border: 1px solid rgba(242, 63, 67, 0.3);
-      padding: 4px 8px;
-      border-radius: 6px;
+      background: rgba(242, 63, 67, 0.15);
+      border: 1px solid rgba(242, 63, 67, 0.35);
+      padding: 1px 6px;
+      border-radius: 4px;
+      margin-left: 4px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
       white-space: nowrap;
-      flex-shrink: 0;
+      vertical-align: middle;
     }
 
     /* Option Selectors */
@@ -590,16 +593,16 @@
             <div class="dshrink-file-meta">
               <span class="dshrink-meta-item">
                 ${ICONS.clock}
-                <span id="dshrink-duration-val">Reading length...</span>
+                <span id="dshrink-duration-val">--:--</span>
               </span>
               <span class="dshrink-meta-dot">•</span>
               <span class="dshrink-meta-item">
                 ${ICONS.file}
                 <strong class="dshrink-size-val">${Compressor.formatBytes(file.size)}</strong>
               </span>
+              <span class="dshrink-overlimit-badge" id="dshrink-overlimit-badge">Over 20 MB</span>
             </div>
           </div>
-          <span class="dshrink-overlimit-badge" id="dshrink-overlimit-badge">Over 20 MB Limit</span>
         </div>
 
         <div id="dshrink-warn-container" style="display: none;"></div>
@@ -704,7 +707,7 @@
       if (isAborted) return;
       mediaDuration = duration;
       const formatted = Compressor.formatDuration(duration);
-      durationVal.textContent = `Length: ${formatted}`;
+      durationVal.textContent = formatted;
 
       if (fullBtn) {
         fullBtn.textContent = `Full (${formatted})`;

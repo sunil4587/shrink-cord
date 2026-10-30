@@ -29,6 +29,7 @@
         "*://*.discord.com/*"
       ],
       "js": [
+        "fix-webm-duration.js",
         "compressor.js",
         "ui.js",
         "content.js"

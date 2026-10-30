@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "DiscordShrink - Auto 25MB Video Compressor",
+  "version": "1.0.0",
+  "description": "Automatically catches oversized videos on Discord Web and compresses them under 25MB right in your browser.",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "*://*.discord.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "DiscordShrink Settings"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.discord.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "styles.css"
+      ],
+      "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "compressor.html",
+        "compressor.js"
+      ],
+      "matches": [
+        "*://*.discord.com/*"
+      ]
+    }
+  ]
+}

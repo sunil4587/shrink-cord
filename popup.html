@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DiscordShrink Settings</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      width: 320px;
+      font-family: "gg sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #313338;
+      color: #dbdee1;
+      user-select: none;
+    }
+
+    .header {
+      padding: 14px 16px;
+      background-color: #2b2d31;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .logo-icon {
+      width: 24px;
+      height: 24px;
+      fill: #5865f2;
+    }
+
+    .title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 0;
+      flex-grow: 1;
+    }
+
+    .badge {
+      font-size: 11px;
+      font-weight: 700;
+      color: #23a55a;
+      background-color: rgba(35, 165, 90, 0.15);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .content {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .setting-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #b5bac1;
+    }
+
+    select {
+      background-color: #1e1f22;
+      color: #dbdee1;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+      padding: 8px 10px;
+      font-size: 13px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    select:focus {
+      border-color: #5865f2;
+    }
+
+    .status-card {
+      background-color: #2b2d31;
+      border-radius: 6px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background-color: #23a55a;
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(35, 165, 90, 0.6);
+    }
+
+    .status-text {
+      font-size: 12px;
+      font-weight: 500;
+      color: #b5bac1;
+    }
+
+    .footer {
+      padding: 12px 16px;
+      background-color: #2b2d31;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .link {
+      font-size: 12px;
+      color: #00a8fc;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .link:hover {
+      text-decoration: underline;
+    }
+
+    .version {
+      font-size: 11px;
+      color: #80848e;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <svg class="logo-icon" viewBox="0 0 24 24">
+      <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+    </svg>
+    <h1 class="title">DiscordShrink</h1>
+    <span class="badge">ACTIVE</span>
+  </div>
+
+  <div class="content">
+    <div class="status-card">
+      <div class="status-dot"></div>
+      <span class="status-text">Watching for &gt;25MB uploads on Discord Web</span>
+    </div>
+
+    <div class="setting-group">
+      <label class="label" for="default-target">Default Target Size</label>
+      <select id="default-target">
+        <option value="24" selected>24.0 MB (Discord Free Safe Limit)</option>
+        <option value="15">15.0 MB (WhatsApp & Mobile Friendly)</option>
+        <option value="7.5">7.5 MB (Compact)</option>
+      </select>
+    </div>
+
+    <div class="setting-group">
+      <label class="label" for="default-resolution">Default Resolution</label>
+      <select id="default-resolution">
+        <option value="720" selected>Auto 720p (Recommended)</option>
+        <option value="480">480p (Fastest)</option>
+        <option value="original">Keep Original</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="footer">
+    <a href="https://github.com/yourusername/discord-shrink" target="_blank" class="link">⭐ GitHub</a>
+    <span class="version">v1.0.0 (FOSS)</span>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-// DiscordShrink - Content Script (Ultra-Modern Discord Native UI with Circular Rounded Close Button)
+// DiscordShrink - Content Script (Ultra-Fast Finalization, Zero Hang, Header Limit Pill)
 
 (function () {
   "use strict";
@@ -59,7 +59,19 @@
       justify-content: space-between;
     }
 
-    .dshrink-header-text h2 {
+    .dshrink-header-text {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .dshrink-header-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .dshrink-header-top h2 {
       font-size: 19px;
       font-weight: 700;
       color: #ffffff;
@@ -67,14 +79,25 @@
       letter-spacing: -0.2px;
     }
 
+    /* Moved Over Limit Pill cleanly to header */
+    .dshrink-header-pill {
+      font-size: 11px;
+      font-weight: 700;
+      color: #f23f43;
+      background: rgba(242, 63, 67, 0.14);
+      border: 1px solid rgba(242, 63, 67, 0.3);
+      padding: 2px 7px;
+      border-radius: 4px;
+      letter-spacing: 0.3px;
+    }
+
     .dshrink-header-text p {
       font-size: 13px;
       color: #949ba4;
-      margin-top: 3px;
       line-height: 16px;
     }
 
-    /* Modern Circular Rounded Close Button */
+    /* Circular Rounded Close Button */
     .dshrink-close-btn {
       background: #2b2d31;
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -194,16 +217,9 @@
       color: #4e5058;
     }
 
-    .dshrink-tag-size {
-      font-size: 11px;
+    .dshrink-size-val {
+      color: #dbdee1;
       font-weight: 600;
-      color: #f23f43;
-      background: rgba(242, 63, 67, 0.12);
-      border: 1px solid rgba(242, 63, 67, 0.28);
-      padding: 3px 8px;
-      border-radius: 4px;
-      letter-spacing: 0.2px;
-      flex-shrink: 0;
     }
 
     .dshrink-group {
@@ -482,7 +498,10 @@
       <div class="dshrink-modal" role="dialog" aria-modal="true">
         <div class="dshrink-header">
           <div class="dshrink-header-text">
-            <h2>Compress Video</h2>
+            <div class="dshrink-header-top">
+              <h2>Compress Video</h2>
+              <span class="dshrink-header-pill">Over 20 MB Limit</span>
+            </div>
             <p>Fits Discord's 20MB limit without Nitro</p>
           </div>
           <button class="dshrink-close-btn" id="dshrink-close-x" aria-label="Close" title="Close">
@@ -514,11 +533,10 @@
                     <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
                     <polyline points="14 2 14 8 20 8"/>
                   </svg>
-                  ${formatBytes(originalFile.size)}
+                  <strong class="dshrink-size-val">${formatBytes(originalFile.size)}</strong>
                 </span>
               </div>
             </div>
-            <span class="dshrink-tag-size">Over 20 MB Limit</span>
           </div>
 
           <div id="dshrink-warn-container" style="display: none;"></div>
@@ -761,6 +779,7 @@
     let recorder = null;
     let audioCtx = null;
     let audioTrack = null;
+    let combinedStream = null;
 
     try {
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -794,8 +813,8 @@
         }
       } catch (e) {}
       try {
-        if (recorder && recorder.state !== "inactive") {
-          recorder.stop();
+        if (combinedStream) {
+          combinedStream.getTracks().forEach((t) => t.stop());
         }
       } catch (e) {}
       URL.revokeObjectURL(fileUrl);
@@ -838,7 +857,7 @@
       if (audioTrack) {
         outputTracks.push(audioTrack);
       }
-      const combinedStream = new MediaStream(outputTracks);
+      combinedStream = new MediaStream(outputTracks);
 
       let mimeType = "video/webm;codecs=vp8,opus";
       if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = "video/webm;codecs=vp9,opus";
@@ -859,12 +878,18 @@
         if (e.data && e.data.size > 0) chunks.push(e.data);
       };
 
-      recorder.onstop = () => {
+      let isCompleted = false;
+
+      function emitComplete() {
+        if (isCompleted || isStopped) return;
+        isCompleted = true;
         cleanup();
-        if (!isStopped) {
-          const finalBlob = new Blob(chunks, { type: "video/webm" });
-          callbacks.onComplete(finalBlob);
-        }
+        const finalBlob = new Blob(chunks, { type: "video/webm" });
+        callbacks.onComplete(finalBlob);
+      }
+
+      recorder.onstop = () => {
+        emitComplete();
       };
 
       recorder.start(100);
@@ -885,16 +910,45 @@
         if (isFinished) return;
         isFinished = true;
         callbacks.onProgress(98, "Finalizing compressed video...", "Attaching to Discord...");
+
+        // 1. Force a final canvas frame tick so captureStream does not freeze in Chromium
+        try {
+          ctx.drawImage(videoEl, 0, 0, width, height);
+        } catch (e) {}
+
+        // 2. Request data to flush any remaining buffer
+        try {
+          if (recorder && recorder.state === "recording") {
+            recorder.requestData();
+          }
+        } catch (e) {}
+
+        // 3. Stop recorder cleanly
         try {
           if (recorder && recorder.state !== "inactive") {
             recorder.stop();
           }
         } catch (e) {}
+
+        // 4. Stop all combinedStream tracks to signal EOF to browser encoder
+        try {
+          if (combinedStream) {
+            combinedStream.getTracks().forEach((track) => track.stop());
+          }
+        } catch (e) {}
+
+        // 5. Zero-Hang Failsafe: If Chromium's onstop lags past 400ms, force emitComplete immediately!
+        setTimeout(() => {
+          if (!isCompleted) {
+            emitComplete();
+          }
+        }, 400);
       }
 
       function drawFrame() {
         if (isStopped || isFinished) return;
 
+        // Check if finished
         if (videoEl.ended || videoEl.currentTime >= targetDuration) {
           finishEncoding();
           return;

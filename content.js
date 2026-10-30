@@ -1,12 +1,12 @@
-// DiscordShrink - Content Script (Ultra-Polished Discord Native Design)
+// DiscordShrink - Content Script (Ultra-Fast, Rock-Solid, Instantly Cancellable)
 
 (function () {
   "use strict";
 
-  const DISCORD_LIMIT_BYTES = 19 * 1024 * 1024; // 19 MB
+  const DISCORD_LIMIT_BYTES = 19 * 1024 * 1024; // 19 MB (Safety margin below 20MB)
   let activeModalHost = null;
 
-  console.log("%c⚡ DiscordShrink v1.0.0 Active!", "background: #5865F2; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;");
+  console.log("%c⚡ DiscordShrink v1.2 Active!", "background: #5865F2; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;");
 
   const MODAL_CSS = `
     :host {
@@ -32,8 +32,8 @@
     .dshrink-backdrop {
       position: fixed;
       inset: 0;
-      background-color: rgba(0, 0, 0, 0.78);
-      backdrop-filter: blur(10px);
+      background-color: rgba(0, 0, 0, 0.82);
+      backdrop-filter: blur(12px);
       animation: dshrink-fade-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
@@ -41,10 +41,10 @@
       position: relative;
       background: #313338;
       color: #dbdee1;
-      width: 100%;
+      width: 92%;
       max-width: 480px;
       border-radius: 16px;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.08);
       overflow: hidden;
       display: flex;
       flex-direction: column;
@@ -70,7 +70,7 @@
       height: 42px;
       border-radius: 12px;
       background: linear-gradient(135deg, rgba(88, 101, 242, 0.25), rgba(88, 101, 242, 0.1));
-      border: 1px solid rgba(88, 101, 242, 0.3);
+      border: 1px solid rgba(88, 101, 242, 0.35);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -102,7 +102,7 @@
       border: none;
       color: #80848e;
       cursor: pointer;
-      padding: 4px;
+      padding: 6px;
       border-radius: 6px;
       display: flex;
       align-items: center;
@@ -112,7 +112,7 @@
 
     .dshrink-close-btn:hover {
       color: #dbdee1;
-      background: rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.08);
     }
 
     .dshrink-close-btn svg {
@@ -122,21 +122,21 @@
     }
 
     .dshrink-body {
-      padding: 0 24px 22px 24px;
+      padding: 0 24px 20px 24px;
       display: flex;
       flex-direction: column;
-      gap: 18px;
+      gap: 16px;
     }
 
     .dshrink-file-card {
       background: #2b2d31;
       border-radius: 10px;
-      padding: 12px 16px;
+      padding: 12px 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      gap: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      gap: 10px;
     }
 
     .dshrink-file-card-left {
@@ -162,25 +162,62 @@
       text-overflow: ellipsis;
     }
 
+    .dshrink-pill-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
     .dshrink-size-pill {
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
       color: #f23f43;
-      background: rgba(242, 63, 67, 0.14);
-      padding: 4px 10px;
+      background: rgba(242, 63, 67, 0.15);
+      padding: 3px 8px;
       border-radius: 999px;
-      border: 1px solid rgba(242, 63, 67, 0.25);
+      border: 1px solid rgba(242, 63, 67, 0.3);
+    }
+
+    .dshrink-duration-pill {
+      font-size: 11px;
+      font-weight: 600;
+      color: #b5bac1;
+      background: rgba(255, 255, 255, 0.07);
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .dshrink-warn-box {
+      background: rgba(240, 178, 50, 0.1);
+      border: 1px solid rgba(240, 178, 50, 0.3);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 12px;
+      color: #f0b232;
+      line-height: 1.4;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .dshrink-warn-box svg {
+      width: 16px;
+      height: 16px;
+      fill: #f0b232;
       flex-shrink: 0;
+      margin-top: 1px;
     }
 
     .dshrink-field {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
 
     .dshrink-field-label {
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.6px;
@@ -200,9 +237,9 @@
       color: #f2f3f5;
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 8px;
-      padding: 12px 14px;
+      padding: 11px 14px;
       padding-right: 36px;
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 500;
       outline: none;
       cursor: pointer;
@@ -252,6 +289,7 @@
 
     .dshrink-progress-pct {
       color: #23a55a;
+      font-weight: 700;
     }
 
     .dshrink-progress-track {
@@ -267,11 +305,11 @@
       height: 100%;
       background: linear-gradient(90deg, #5865f2, #23a55a);
       border-radius: 999px;
-      transition: width 0.25s ease;
+      transition: width 0.2s ease;
     }
 
     .dshrink-footer {
-      padding: 18px 24px;
+      padding: 16px 24px;
       background: #2b2d31;
       display: flex;
       justify-content: flex-end;
@@ -293,7 +331,8 @@
     }
 
     .dshrink-btn-cancel:hover {
-      text-decoration: underline;
+      background: rgba(255, 255, 255, 0.07);
+      color: #fa777c;
     }
 
     .dshrink-btn-primary {
@@ -317,16 +356,11 @@
       box-shadow: 0 4px 16px rgba(88, 101, 242, 0.5);
     }
 
-    .dshrink-btn-primary:active {
-      transform: scale(0.98);
-    }
-
     .dshrink-btn-primary:disabled {
       background: #35373c !important;
       color: #80848e !important;
       box-shadow: none !important;
       cursor: not-allowed;
-      transform: none !important;
     }
 
     @keyframes dshrink-fade-in {
@@ -346,6 +380,13 @@
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+  }
+
+  function formatDuration(seconds) {
+    if (!seconds || isNaN(seconds)) return "0:00";
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}m ${secs < 10 ? "0" : ""}${secs}s`;
   }
 
   function isVideoFile(file) {
@@ -370,10 +411,9 @@
     return false;
   }
 
+  // Intercept drop events on Discord
   ["dragenter", "dragover"].forEach((evt) => {
-    window.addEventListener(evt, (e) => {
-      e.preventDefault();
-    }, true);
+    window.addEventListener(evt, (e) => e.preventDefault(), true);
   });
 
   window.addEventListener("drop", (e) => {
@@ -402,6 +442,9 @@
       activeModalHost = null;
     }
 
+    let isAborted = false;
+    let cleanupFn = null;
+
     const host = document.createElement("div");
     host.id = "discord-shrink-host";
     const shadow = host.attachShadow({ mode: "open" });
@@ -422,8 +465,8 @@
               </svg>
             </div>
             <div class="dshrink-header-text">
-              <h2>Optimize Video Size</h2>
-              <p>Compress locally to bypass Discord upload limit</p>
+              <h2>DiscordShrink Video Optimizer</h2>
+              <p>Compress locally to fit Discord's 20MB limit</p>
             </div>
           </div>
           <button class="dshrink-close-btn" id="dshrink-close-x" aria-label="Close">
@@ -437,28 +480,46 @@
               <svg viewBox="0 0 24 24"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg>
               <span class="dshrink-filename" title="${originalFile.name}">${originalFile.name}</span>
             </div>
-            <span class="dshrink-size-pill">${formatBytes(originalFile.size)}</span>
+            <div class="dshrink-pill-group">
+              <span class="dshrink-duration-pill" id="dshrink-duration-pill">Loading...</span>
+              <span class="dshrink-size-pill">${formatBytes(originalFile.size)}</span>
+            </div>
           </div>
 
+          <div id="dshrink-warn-container" style="display: none;"></div>
+
           <div id="dshrink-options-area" style="display: flex; flex-direction: column; gap: 14px;">
-            <div class="dshrink-field">
-              <label class="dshrink-field-label">Target File Size</label>
+            <div class="dshrink-field" id="dshrink-clip-field" style="display: none;">
+              <label class="dshrink-field-label">Length to Share</label>
               <div class="dshrink-select-wrapper">
-                <select class="dshrink-select" id="dshrink-target-size">
-                  <option value="19.0" selected>19.0 MB — Discord Safe Limit (Guaranteed)</option>
-                  <option value="15.0">15.0 MB — WhatsApp & Mobile Safe</option>
-                  <option value="7.5">7.5 MB — Ultra-Fast / Low Bandwidth</option>
+                <select class="dshrink-select" id="dshrink-clip-length">
+                  <option value="60" selected>⚡ Highlight Clip (First 60s) — Instant (~10s encode)</option>
+                  <option value="30">⚡ Quick Clip (First 30s) — Ultra-Fast (~5s encode)</option>
+                  <option value="120">⚡ Extended Clip (First 2 min) — (~20s encode)</option>
+                  <option value="full">Full Video (Slow — takes several minutes)</option>
                 </select>
                 <svg class="dshrink-select-arrow" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
               </div>
             </div>
 
             <div class="dshrink-field">
-              <label class="dshrink-field-label">Video Quality</label>
+              <label class="dshrink-field-label">Target File Size</label>
+              <div class="dshrink-select-wrapper">
+                <select class="dshrink-select" id="dshrink-target-size">
+                  <option value="19.0" selected>19.0 MB — Discord Safe Limit (Guaranteed)</option>
+                  <option value="15.0">15.0 MB — Safe Buffer / Mobile</option>
+                  <option value="8.0">8.0 MB — Legacy Discord Size</option>
+                </select>
+                <svg class="dshrink-select-arrow" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+              </div>
+            </div>
+
+            <div class="dshrink-field">
+              <label class="dshrink-field-label">Resolution & Speed</label>
               <div class="dshrink-select-wrapper">
                 <select class="dshrink-select" id="dshrink-resolution">
                   <option value="720" selected>720p HD (Best balance of speed & quality)</option>
-                  <option value="480">480p SD (Fastest encode)</option>
+                  <option value="480">480p SD (Fastest)</option>
                   <option value="original">Original Resolution</option>
                 </select>
                 <svg class="dshrink-select-arrow" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
@@ -468,7 +529,7 @@
 
           <div class="dshrink-progress-card" id="dshrink-progress-card">
             <div class="dshrink-progress-header">
-              <span class="dshrink-progress-status" id="dshrink-status-text">Analyzing video...</span>
+              <span class="dshrink-progress-status" id="dshrink-status-text">Compressing video...</span>
               <span class="dshrink-progress-pct" id="dshrink-percentage">0%</span>
             </div>
             <div class="dshrink-progress-track">
@@ -499,56 +560,120 @@
     const progressBar = shadow.getElementById("dshrink-progress-bar");
     const statusText = shadow.getElementById("dshrink-status-text");
     const percentageText = shadow.getElementById("dshrink-percentage");
+    const durationPill = shadow.getElementById("dshrink-duration-pill");
+    const warnContainer = shadow.getElementById("dshrink-warn-container");
+    const clipField = shadow.getElementById("dshrink-clip-field");
+    const clipLengthSelect = shadow.getElementById("dshrink-clip-length");
     const targetSizeSelect = shadow.getElementById("dshrink-target-size");
     const resolutionSelect = shadow.getElementById("dshrink-resolution");
 
-    function closeModal() {
+    let videoDuration = 0;
+    const probeVideo = document.createElement("video");
+    probeVideo.preload = "metadata";
+    probeVideo.muted = true;
+    const probeUrl = URL.createObjectURL(originalFile);
+    probeVideo.src = probeUrl;
+
+    probeVideo.onloadedmetadata = () => {
+      videoDuration = probeVideo.duration || 0;
+      durationPill.textContent = formatDuration(videoDuration);
+      URL.revokeObjectURL(probeUrl);
+
+      // If video is longer than 2 minutes (like the user's 50-minute sample)
+      if (videoDuration > 120) {
+        clipField.style.display = "flex";
+        warnContainer.style.display = "block";
+        warnContainer.innerHTML = `
+          <div class="dshrink-warn-box">
+            <svg viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+            <div>
+              <strong>Long video detected (${formatDuration(videoDuration)}).</strong><br/>
+              Discord clips work best at 60s. We recommend clipping to attach in seconds.
+            </div>
+          </div>
+        `;
+      }
+    };
+
+    probeVideo.onerror = () => {
+      durationPill.textContent = "Video";
+      URL.revokeObjectURL(probeUrl);
+    };
+
+    // INSTANT CANCEL - NEVER FREEZES
+    function cancelAndClose() {
+      isAborted = true;
+      if (typeof cleanupFn === "function") {
+        cleanupFn();
+      }
       if (activeModalHost) {
         activeModalHost.remove();
         activeModalHost = null;
       }
     }
 
-    cancelBtn.addEventListener("click", closeModal);
-    closeX.addEventListener("click", closeModal);
-    backdrop.addEventListener("click", closeModal);
+    cancelBtn.addEventListener("click", cancelAndClose);
+    closeX.addEventListener("click", cancelAndClose);
+    backdrop.addEventListener("click", cancelAndClose);
+
+    // ESC key closes modal
+    const keyHandler = (e) => {
+      if (e.key === "Escape") {
+        cancelAndClose();
+        window.removeEventListener("keydown", keyHandler);
+      }
+    };
+    window.addEventListener("keydown", keyHandler);
 
     startBtn.addEventListener("click", function () {
       const targetMB = parseFloat(targetSizeSelect.value);
-      const resolution = resolutionSelect.value;
+      const resolutionSetting = resolutionSelect.value;
+      
+      let maxDuration = videoDuration || 60;
+      if (videoDuration > 120) {
+        const clipChoice = clipLengthSelect.value;
+        if (clipChoice !== "full") {
+          maxDuration = Math.min(parseFloat(clipChoice), videoDuration);
+        }
+      }
 
       optionsArea.style.display = "none";
+      warnContainer.style.display = "none";
       progressCard.style.display = "flex";
       startBtn.disabled = true;
-      cancelBtn.disabled = true;
+      cancelBtn.textContent = "Cancel Processing";
 
-      compressVideo(originalFile, targetMB, resolution, {
+      cleanupFn = compressVideo(originalFile, targetMB, resolutionSetting, maxDuration, {
         onProgress: (percent, status) => {
+          if (isAborted) return;
           progressBar.style.width = percent + "%";
           percentageText.textContent = Math.round(percent) + "%";
           if (status) statusText.textContent = status;
         },
         onComplete: (compressedBlob) => {
+          if (isAborted) return;
           progressBar.style.width = "100%";
           percentageText.textContent = "100%";
-          statusText.textContent = `Attached ${formatBytes(compressedBlob.size)} to chat!`;
+          statusText.textContent = `Attached ${formatBytes(compressedBlob.size)} to Discord!`;
 
           setTimeout(() => {
-            attachToDiscord(compressedBlob, originalFile.name);
-            closeModal();
-          }, 400);
+            if (!isAborted) {
+              attachToDiscord(compressedBlob, originalFile.name);
+              cancelAndClose();
+            }
+          }, 350);
         },
         onError: (err) => {
+          if (isAborted) return;
           statusText.textContent = "Error: " + err.message;
           startBtn.disabled = false;
-          cancelBtn.disabled = false;
         }
       });
     });
   }
 
-  function compressVideo(file, targetMB, resolutionSetting, callbacks) {
-    callbacks.onProgress(5, "Reading video...");
+  function compressVideo(file, targetMB, resolutionSetting, maxDuration, callbacks) {
+    callbacks.onProgress(5, "Analyzing video stream...");
 
     const videoEl = document.createElement("video");
     videoEl.preload = "auto";
@@ -557,8 +682,29 @@
     const fileUrl = URL.createObjectURL(file);
     videoEl.src = fileUrl;
 
+    let isStopped = false;
+    let recorder = null;
+
+    function cleanup() {
+      isStopped = true;
+      try {
+        videoEl.pause();
+        videoEl.removeAttribute("src");
+        videoEl.load();
+      } catch (e) {}
+      try {
+        if (recorder && recorder.state !== "inactive") {
+          recorder.stop();
+        }
+      } catch (e) {}
+      URL.revokeObjectURL(fileUrl);
+    }
+
     videoEl.onloadedmetadata = function () {
-      const duration = videoEl.duration || 30;
+      if (isStopped) return;
+      const fullDuration = videoEl.duration || 30;
+      const targetDuration = Math.min(maxDuration, fullDuration);
+
       let width = videoEl.videoWidth || 1280;
       let height = videoEl.videoHeight || 720;
 
@@ -569,82 +715,88 @@
         width = Math.round((width * 480) / height);
         height = 480;
       }
-
       if (width % 2 !== 0) width--;
       if (height % 2 !== 0) height--;
 
-      const targetBytes = targetMB * 1024 * 1024;
+      // Calculate bitrate to strictly fit target size
+      const targetBytes = targetMB * 1024 * 1024 * 0.95; // 5% safe buffer
       const totalBits = targetBytes * 8;
-      const totalBitrate = Math.floor(totalBits / duration);
-      const audioBitrate = 96000;
-      let videoBitrate = Math.floor(totalBitrate - audioBitrate);
-      if (videoBitrate < 120000) videoBitrate = 120000;
+      const totalBitrate = Math.floor(totalBits / targetDuration);
+      let videoBitrate = Math.max(180000, totalBitrate - 96000);
 
-      callbacks.onProgress(15, `Encoding (${width}x${height})...`);
+      callbacks.onProgress(15, `Encoding at high speed (${width}x${height})...`);
 
       const canvas = document.createElement("canvas");
       canvas.width = width;
       canvas.height = height;
       const ctx = canvas.getContext("2d");
-      const stream = canvas.captureStream(30);
+      const stream = canvas.captureStream(24);
 
-      let mimeType = "video/webm;codecs=vp9,opus";
-      if (!MediaRecorder.isTypeSupported(mimeType)) {
-        mimeType = "video/webm;codecs=vp8,opus";
-      }
-      if (!MediaRecorder.isTypeSupported(mimeType)) {
-        mimeType = "video/webm";
-      }
+      let mimeType = "video/webm;codecs=vp8,opus";
+      if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = "video/webm";
 
-      const recorder = new MediaRecorder(stream, {
-        mimeType: mimeType,
-        videoBitsPerSecond: videoBitrate,
-        audioBitsPerSecond: audioBitrate
-      });
+      try {
+        recorder = new MediaRecorder(stream, {
+          mimeType: mimeType,
+          videoBitsPerSecond: videoBitrate
+        });
+      } catch (e) {
+        recorder = new MediaRecorder(stream);
+      }
 
       const chunks = [];
       recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunks.push(e.data);
+        if (e.data && e.data.size > 0) chunks.push(e.data);
       };
 
       recorder.onstop = () => {
         URL.revokeObjectURL(fileUrl);
-        const finalBlob = new Blob(chunks, { type: "video/webm" });
-        callbacks.onComplete(finalBlob);
+        if (!isStopped) {
+          const finalBlob = new Blob(chunks, { type: "video/webm" });
+          callbacks.onComplete(finalBlob);
+        }
       };
 
       recorder.start(100);
-      videoEl.playbackRate = 2.0;
+      videoEl.playbackRate = 4.0; // 4x speed encoding!
       videoEl.play();
 
       function drawFrame() {
-        if (videoEl.paused || videoEl.ended) return;
+        if (isStopped) return;
+
+        if (videoEl.currentTime >= targetDuration || videoEl.ended || videoEl.paused) {
+          callbacks.onProgress(98, "Finishing video...");
+          recorder.stop();
+          return;
+        }
+
         ctx.drawImage(videoEl, 0, 0, width, height);
 
-        const currentProgress = 15 + (videoEl.currentTime / duration) * 80;
-        callbacks.onProgress(currentProgress, `Compressing... ${(videoEl.currentTime).toFixed(0)}s / ${duration.toFixed(0)}s`);
+        const currentProgress = 15 + (videoEl.currentTime / targetDuration) * 80;
+        callbacks.onProgress(
+          currentProgress,
+          `Optimizing: ${(videoEl.currentTime).toFixed(0)}s / ${targetDuration.toFixed(0)}s`
+        );
 
         requestAnimationFrame(drawFrame);
       }
 
       videoEl.onplay = () => requestAnimationFrame(drawFrame);
-
-      videoEl.onended = () => {
-        callbacks.onProgress(98, "Finishing up...");
-        recorder.stop();
-      };
     };
 
     videoEl.onerror = () => {
       URL.revokeObjectURL(fileUrl);
-      callbacks.onError(new Error("Unable to decode video format."));
+      if (!isStopped) callbacks.onError(new Error("Unable to decode video format."));
     };
+
+    return cleanup;
   }
 
   function attachToDiscord(blob, originalName) {
     const cleanName = originalName.replace(/\.[^/.]+$/, "") + "-compressed.webm";
     const compressedFile = new File([blob], cleanName, { type: "video/webm" });
 
+    // Method 1: Discord's native hidden file input
     const fileInput = document.querySelector('input[type="file"]');
     if (fileInput) {
       const dataTransfer = new DataTransfer();
@@ -654,6 +806,7 @@
       return;
     }
 
+    // Method 2: Drop on active chat box
     const chatBox = document.querySelector('[role="textbox"]') || document.querySelector('[contenteditable="true"]');
     if (chatBox) {
       const dataTransfer = new DataTransfer();

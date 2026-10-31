@@ -28,4 +28,4 @@ https://github.com/sunil4587/shrink-cord
 
 ### 6. Contact
 For any questions or privacy inquiries, contact the developer at:  
-`ashu.kumar.6787@gmail.com` or open an issue on [GitHub](https://github.com/sunil4587/shrink-cord/issues).
+`developer.sk4587@gmail.com` or open an issue on [GitHub](https://github.com/sunil4587/shrink-cord/issues).

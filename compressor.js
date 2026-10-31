@@ -363,6 +363,13 @@
     let audioCtx = null;
     let isFinishing = false;
 
+    let sourceX = 0;
+    let sourceY = 0;
+    let sourceWidth = 0;
+    let sourceHeight = 0;
+    let targetWidth = 0;
+    let targetHeight = 0;
+
     function stopFrameLoop() {
       if (fallbackInterval) {
         clearInterval(fallbackInterval);
@@ -403,27 +410,39 @@
       const audioBps = totalAvailableBps < 250000 ? 48000 : (totalAvailableBps < 500000 ? 64000 : 96000);
       const videoBps = Math.max(80000, Math.min(totalAvailableBps - audioBps, 8500000));
 
-      let targetWidth = videoEl.videoWidth || 1920;
-      let targetHeight = videoEl.videoHeight || 1080;
-      let maxShortEdge = parseInt(resolutionSetting, 10) || 1080;
+      const origWidth = videoEl.videoWidth || 1920;
+      const origHeight = videoEl.videoHeight || 1080;
+      const isSquarePreset = targetMB <= 0.5;
 
-      if (targetMB <= 0.25) {
-        maxShortEdge = Math.min(maxShortEdge, 256);
-      } else if (targetMB <= 0.5) {
-        maxShortEdge = Math.min(maxShortEdge, 320);
-      } else if (videoBps < 220000 && maxShortEdge > 360) {
-        maxShortEdge = 360;
-      } else if (videoBps < 450000 && maxShortEdge > 480) {
-        maxShortEdge = 480;
-      } else if (videoBps < 900000 && maxShortEdge > 720) {
-        maxShortEdge = 720;
-      }
+      if (isSquarePreset) {
+        const side = Math.min(origWidth, origHeight);
+        sourceX = Math.round((origWidth - side) / 2);
+        sourceY = Math.round((origHeight - side) / 2);
+        sourceWidth = side;
+        sourceHeight = side;
 
-      const currentShortEdge = Math.min(targetWidth, targetHeight);
-      if (currentShortEdge > maxShortEdge) {
-        const scale = maxShortEdge / currentShortEdge;
-        targetWidth = Math.round(targetWidth * scale);
-        targetHeight = Math.round(targetHeight * scale);
+        const maxSide = targetMB <= 0.25 ? 256 : 320;
+        targetWidth = Math.min(side, maxSide);
+        targetHeight = targetWidth;
+      } else {
+        sourceX = 0;
+        sourceY = 0;
+        sourceWidth = origWidth;
+        sourceHeight = origHeight;
+        targetWidth = origWidth;
+        targetHeight = origHeight;
+
+        let maxShortEdge = parseInt(resolutionSetting, 10) || 1080;
+        if (videoBps < 220000 && maxShortEdge > 360) maxShortEdge = 360;
+        else if (videoBps < 450000 && maxShortEdge > 480) maxShortEdge = 480;
+        else if (videoBps < 900000 && maxShortEdge > 720) maxShortEdge = 720;
+
+        const currentShortEdge = Math.min(targetWidth, targetHeight);
+        if (currentShortEdge > maxShortEdge) {
+          const scale = maxShortEdge / currentShortEdge;
+          targetWidth = Math.round(targetWidth * scale);
+          targetHeight = Math.round(targetHeight * scale);
+        }
       }
 
       targetWidth = Math.max(2, targetWidth & ~1);
@@ -494,7 +513,7 @@
         stopFrameLoop();
 
         videoEl.pause();
-        ctx.drawImage(videoEl, 0, 0, targetWidth, targetHeight);
+        ctx.drawImage(videoEl, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, targetWidth, targetHeight);
         callbacks.onProgress(98, "Finalizing compressed video...", "Patching metadata and attaching...");
 
         if (recorder && recorder.state !== "inactive") {
@@ -533,7 +552,7 @@
           return;
         }
 
-        ctx.drawImage(videoEl, 0, 0, targetWidth, targetHeight);
+        ctx.drawImage(videoEl, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, targetWidth, targetHeight);
         ctx.fillStyle = (frameCounter++ % 2 === 0) ? "rgba(0,0,0,0.01)" : "rgba(0,0,0,0.02)";
         ctx.fillRect(0, 0, 1, 1);
 

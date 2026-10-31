@@ -220,18 +220,82 @@
     #dshrink-modal-root .dshrink-file-details {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 5px;
       min-width: 0;
       flex: 1;
     }
 
-    #dshrink-modal-root .dshrink-filename {
-      font-size: 13.5px;
+    #dshrink-modal-root .dshrink-filename-input {
+      width: 100%;
+      background: var(--input-background, rgba(0, 0, 0, 0.35));
+      border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.1));
+      border-radius: 6px;
+      color: var(--text-normal, #f2f3f5);
+      font-size: 13px;
       font-weight: 600;
-      color: #f2f3f5;
-      white-space: nowrap;
+      padding: 4px 8px;
+      outline: none;
+      transition: border-color 0.15s ease, background-color 0.15s ease;
       overflow: hidden;
       text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    #dshrink-modal-root .dshrink-filename-input:focus {
+      border-color: var(--brand-500, #5865f2);
+      background: var(--input-background, rgba(0, 0, 0, 0.5));
+    }
+
+    #dshrink-modal-root .dshrink-spoiler-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+      margin-top: 3px;
+      user-select: none;
+      font-size: 11.5px;
+      color: var(--text-muted, #949ba4);
+      transition: color 0.15s ease;
+    }
+
+    #dshrink-modal-root .dshrink-spoiler-label:hover {
+      color: var(--text-normal, #dbdee1);
+    }
+
+    #dshrink-modal-root .dshrink-spoiler-checkbox {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+      pointer-events: none;
+    }
+
+    #dshrink-modal-root .dshrink-spoiler-custom-box {
+      width: 15px;
+      height: 15px;
+      border-radius: 4px;
+      border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.2));
+      background: rgba(0, 0, 0, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    #dshrink-modal-root .dshrink-spoiler-checkbox:checked + .dshrink-spoiler-custom-box {
+      background: var(--brand-500, #5865f2);
+      border-color: var(--brand-500, #5865f2);
+    }
+
+    #dshrink-modal-root .dshrink-spoiler-checkbox:checked + .dshrink-spoiler-custom-box::after {
+      content: "";
+      display: block;
+      width: 3.5px;
+      height: 7px;
+      border: solid #ffffff;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg) translate(-0.5px, -0.5px);
     }
 
     #dshrink-modal-root .dshrink-file-meta {
@@ -634,7 +698,7 @@
             </div>
           </div>
           <div class="dshrink-file-details">
-            <span class="dshrink-filename" title="${safeFileName}">${safeFileName}</span>
+            <input type="text" class="dshrink-filename-input" id="dshrink-filename-input" value="${safeFileName}" placeholder="Filename" spellcheck="false" title="Click to rename" />
             <div class="dshrink-file-meta">
               <span class="dshrink-meta-item">
                 ${ICONS.clock}
@@ -651,6 +715,11 @@
                 <span>Over 20MB</span>
               </span>
             </div>
+            <label class="dshrink-spoiler-label" title="Wrap media in Discord spoiler blur (SPOILER_)">
+              <input type="checkbox" id="dshrink-spoiler-check" class="dshrink-spoiler-checkbox" />
+              <span class="dshrink-spoiler-custom-box"></span>
+              <span>Mark as Spoiler</span>
+            </label>
           </div>
         </div>
 
@@ -815,13 +884,18 @@
       progressCard.style.display = "flex";
       startBtn.disabled = true;
 
+      const filenameInput = root.querySelector("#dshrink-filename-input");
+      const spoilerCheck = root.querySelector("#dshrink-spoiler-check");
+
       callbacks.onStart({
         targetMB: selectedSize,
         quality: selectedRes,
         format: selectedFormat,
         clip: selectedClip,
         mediaDuration,
-        hostElement: thumbBox
+        hostElement: thumbBox,
+        customName: filenameInput ? filenameInput.value.trim() : "",
+        isSpoiler: spoilerCheck ? spoilerCheck.checked : false
       });
     });
 

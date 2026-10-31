@@ -76,12 +76,23 @@
     } catch (e) {}
   }
 
-  function attachToDiscord(blob, originalName, isAudio, format) {
+  function attachToDiscord(blob, originalName, isAudio, format, customName, isSpoiler) {
     const isMp4 = !isAudio && format === "mp4";
     const ext = isAudio ? "wav" : (isMp4 ? "mp4" : "webm");
     const mimeType = isAudio ? "audio/wav" : (isMp4 ? "video/mp4" : "video/webm");
-    const baseName = (originalName || (isAudio ? "audio" : "video")).replace(/\.[^/.]+$/, "");
-    const compressedFile = new File([blob], `${baseName}-compressed.${ext}`, { type: mimeType });
+    let name = (customName && customName.trim())
+      ? customName.trim()
+      : `${(originalName || (isAudio ? "audio" : "video")).replace(/\.[^/.]+$/, "")}-compressed.${ext}`;
+    const expectedExt = `.${ext}`;
+    if (!name.toLowerCase().endsWith(expectedExt)) {
+      name = `${name.replace(/\.[^/.]+$/, "")}${expectedExt}`;
+    }
+    if (isSpoiler && !name.startsWith("SPOILER_")) {
+      name = `SPOILER_${name}`;
+    } else if (!isSpoiler && name.startsWith("SPOILER_")) {
+      name = name.replace(/^SPOILER_/, "");
+    }
+    const compressedFile = new File([blob], name, { type: mimeType });
     generatedFiles.add(compressedFile);
 
     const dataTransfer = new DataTransfer();
@@ -188,7 +199,7 @@
             },
             onComplete: (compressedBlob, format) => {
               if (activeModal) activeModal.complete(compressedBlob, format);
-              attachToDiscord(compressedBlob, file.name, isAudio, format);
+              attachToDiscord(compressedBlob, file.name, isAudio, format, options.customName, options.isSpoiler);
               activeCleanup = null;
               activeModal = null;
               if (onDone) onDone();

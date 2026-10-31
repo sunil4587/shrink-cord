@@ -48,7 +48,7 @@ Until the extension is published on the Chrome Web Store, you can install it loc
 
 1. Clone or download this repository:
    ```bash
-   git clone https://github.com/sunil4587/shrink-cord.git
+   git clone https://github.com/Isaac4096/shrink-cord.git
    ```
 2. Open **Google Chrome**, **Brave**, or **Microsoft Edge**.
 3. Navigate to `chrome://extensions/` in your address bar.

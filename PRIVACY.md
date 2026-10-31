@@ -24,8 +24,8 @@ ShrinkCord ("we", "our", or "the extension") is an open-source browser extension
 
 ### 5. Open Source
 ShrinkCord is free and open-source software under the GNU General Public License v3.0 (GPLv3). The full source code is publicly auditable at:  
-https://github.com/sunil4587/shrink-cord
+https://github.com/Isaac4096/shrink-cord
 
 ### 6. Contact
 For any questions or privacy inquiries, contact the developer at:  
-`developer.sk4587@gmail.com` or open an issue on [GitHub](https://github.com/sunil4587/shrink-cord/issues).
+`developer.sk4587@gmail.com` or open an issue on [GitHub](https://github.com/Isaac4096/shrink-cord/issues).

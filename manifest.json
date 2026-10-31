@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "ShrinkCord - Auto Media Squeezer for Discord",
   "version": "1.2.0",
-  "description": "Automatically intercepts oversized videos and audio on Discord Web (>20MB) and compresses them client-side under Discord's free limit.",
+  "description": "Automatically compresses oversized videos and audio on Discord Web client-side under the 20MB limit without Nitro.",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",

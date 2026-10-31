@@ -438,6 +438,26 @@
       gap: 12px;
     }
 
+    #dshrink-modal-root .dshrink-tip-row {
+      margin-top: 12px;
+      text-align: center;
+    }
+
+    #dshrink-modal-root .dshrink-tip-link {
+      font-size: 11.5px;
+      color: #949ba4;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: color 0.15s ease;
+    }
+
+    #dshrink-modal-root .dshrink-tip-link:hover {
+      color: #ffdd00;
+      text-decoration: underline;
+    }
+
     #dshrink-modal-root .dshrink-btn-cancel {
       flex: 1;
       background: #35373c;
@@ -685,6 +705,13 @@
             ${ICONS.zap}
             <span>Compress</span>
           </button>
+        </div>
+
+        <div class="dshrink-tip-row">
+          <a href="https://www.buymeacoffee.com/sunil4587" target="_blank" rel="noopener noreferrer" class="dshrink-tip-link">
+            <span>☕</span>
+            <span>Support ShrinkCord on Buy Me a Coffee</span>
+          </a>
         </div>
       </div>
     `;

@@ -13,6 +13,10 @@
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
 
   const PRESETS = {
+    FORMATS: [
+      { val: "mp4", label: "MP4 (Universal)" },
+      { val: "webm", label: "WebM" }
+    ],
     CLIPS: [
       { val: "30", label: "30s Clip" },
       { val: "60", label: "60s Clip" },
@@ -22,7 +26,9 @@
     SIZES: [
       { val: 19.0, label: "19 MB (Discord)" },
       { val: 15.0, label: "15 MB (Balanced)" },
-      { val: 8.0, label: "8 MB (Legacy)" }
+      { val: 8.0, label: "8 MB (Legacy)" },
+      { val: 0.5, label: "500 KB (Sticker)" },
+      { val: 0.25, label: "256 KB (Emoji)" }
     ],
     VIDEO_QUALITIES: [
       { val: "1080", label: "1080p FHD" },
@@ -40,10 +46,12 @@
     const size = parseFloat(saved.targetMB);
     const vidQual = String(saved.quality || "");
     const audQual = String(saved.audioQuality || saved.quality || "");
+    const format = String(saved.format || "mp4").toLowerCase();
     return {
       targetMB: PRESETS.SIZES.some((s) => s.val === size) ? size : 19.0,
       videoQuality: PRESETS.VIDEO_QUALITIES.some((q) => q.val === vidQual) ? vidQual : "1080",
-      audioQuality: PRESETS.AUDIO_QUALITIES.some((q) => q.val === audQual) ? audQual : "32000"
+      audioQuality: PRESETS.AUDIO_QUALITIES.some((q) => q.val === audQual) ? audQual : "32000",
+      format: PRESETS.FORMATS.some((f) => f.val === format) ? format : "mp4"
     };
   }
 
@@ -277,7 +285,7 @@
         const wavBlob = audioBufferToWavBlob(renderedBuffer);
 
         callbacks.onProgress(100, "Audio ready!", "Attaching to Discord...");
-        callbacks.onComplete(wavBlob);
+        callbacks.onComplete(wavBlob, "wav");
       } catch (err) {
         closeAudioContext(audioCtx);
         if (!isStopped) {
@@ -295,7 +303,37 @@
     };
   }
 
-  function compressVideo(file, targetMB, resolutionSetting, maxDuration, callbacks, hostElement) {
+  function resolveVideoMimeType(formatSetting) {
+    const isMp4 = String(formatSetting).toLowerCase() === "mp4";
+    const mp4List = [
+      "video/mp4;codecs=avc1,mp4a.40.2",
+      "video/mp4;codecs=avc1",
+      "video/mp4"
+    ];
+    const webmList = [
+      "video/webm;codecs=vp9,opus",
+      "video/webm;codecs=vp8,opus",
+      "video/webm"
+    ];
+    const primary = isMp4 ? mp4List : webmList;
+    const fallback = isMp4 ? webmList : mp4List;
+
+    return (
+      primary.find((type) => MediaRecorder.isTypeSupported(type)) ||
+      fallback.find((type) => MediaRecorder.isTypeSupported(type)) ||
+      "video/webm"
+    );
+  }
+
+  function compressVideo(
+    file,
+    targetMB,
+    resolutionSetting,
+    maxDuration,
+    callbacks,
+    hostElement,
+    formatSetting = "mp4"
+  ) {
     callbacks.onProgress(5, "Preparing video & audio stream...", "Initializing media pipeline...");
 
     const videoEl = document.createElement("video");
@@ -304,6 +342,7 @@
     videoEl.playsInline = true;
     videoEl.muted = false;
     videoEl.volume = 1.0;
+
     if (hostElement) {
       videoEl.style.cssText = "position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 1; z-index: 1; pointer-events: none;";
       hostElement.appendChild(videoEl);
@@ -368,9 +407,17 @@
       let targetHeight = videoEl.videoHeight || 1080;
       let maxShortEdge = parseInt(resolutionSetting, 10) || 1080;
 
-      if (videoBps < 220000 && maxShortEdge > 360) maxShortEdge = 360;
-      else if (videoBps < 450000 && maxShortEdge > 480) maxShortEdge = 480;
-      else if (videoBps < 900000 && maxShortEdge > 720) maxShortEdge = 720;
+      if (targetMB <= 0.25) {
+        maxShortEdge = Math.min(maxShortEdge, 256);
+      } else if (targetMB <= 0.5) {
+        maxShortEdge = Math.min(maxShortEdge, 320);
+      } else if (videoBps < 220000 && maxShortEdge > 360) {
+        maxShortEdge = 360;
+      } else if (videoBps < 450000 && maxShortEdge > 480) {
+        maxShortEdge = 480;
+      } else if (videoBps < 900000 && maxShortEdge > 720) {
+        maxShortEdge = 720;
+      }
 
       const currentShortEdge = Math.min(targetWidth, targetHeight);
       if (currentShortEdge > maxShortEdge) {
@@ -413,8 +460,8 @@
       }
 
       const combinedStream = new MediaStream(combinedTracks);
-      const mimeType = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"]
-        .find((type) => MediaRecorder.isTypeSupported(type)) || "video/webm";
+      const mimeType = resolveVideoMimeType(formatSetting);
+      const isMp4 = mimeType.startsWith("video/mp4");
 
       try {
         recorder = new MediaRecorder(combinedStream, {
@@ -456,15 +503,17 @@
 
             if (chunks.length > 0) {
               let finalBlob = new Blob(chunks, { type: mimeType });
-              try {
-                const recordedMs = Math.round(Math.min(videoEl.currentTime || duration, duration) * 1000);
-                const patcher = window.ysFixWebmDuration || window.fixWebmDuration;
-                if (recordedMs > 0 && typeof patcher === "function") {
-                  const patched = await patcher(finalBlob, recordedMs, { logger: false });
-                  if (patched && patched.size > 0) finalBlob = patched;
-                }
-              } catch (err) {}
-              callbacks.onComplete(finalBlob);
+              if (!isMp4) {
+                try {
+                  const recordedMs = Math.round(Math.min(videoEl.currentTime || duration, duration) * 1000);
+                  const patcher = window.ysFixWebmDuration || window.fixWebmDuration;
+                  if (recordedMs > 0 && typeof patcher === "function") {
+                    const patched = await patcher(finalBlob, recordedMs, { logger: false });
+                    if (patched && patched.size > 0) finalBlob = patched;
+                  }
+                } catch (err) {}
+              }
+              callbacks.onComplete(finalBlob, isMp4 ? "mp4" : "webm");
             } else {
               callbacks.onError(new Error("Compression failed: empty output"));
             }

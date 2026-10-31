@@ -1,6 +1,6 @@
 /**
  * ShrinkCord - Content Script Controller
- * Intercepts oversized uploads (>20MB) on Discord Web and bridges UI with Compressor.
+ * Intercepts oversized uploads (>20MB) on Discord Web and coordinates batch compression.
  */
 
 (function () {
@@ -9,9 +9,14 @@
   const { Compressor, UI } = window.ShrinkCord;
   const INTERCEPT_EVENTS = ["drop", "paste", "change"];
   const generatedFiles = new WeakSet();
+
   let cachedSettings = {};
   let activeCleanup = null;
   let activeModal = null;
+  let fileQueue = [];
+  let isQueueRunning = false;
+  let queueTotal = 0;
+  let queueCurrentIndex = 0;
 
   window.dispatchEvent(new CustomEvent("dshrink:teardown"));
 
@@ -44,7 +49,7 @@
         finish(cachedSettings);
         return;
       }
-      chrome.storage.local.get(["targetMB", "quality", "audioQuality"], (saved) => {
+      chrome.storage.local.get(["targetMB", "quality", "audioQuality", "format"], (saved) => {
         try {
           if (chrome.runtime && chrome.runtime.lastError) {
             finish(cachedSettings);
@@ -71,9 +76,10 @@
     } catch (e) {}
   }
 
-  function attachToDiscord(blob, originalName, isAudio) {
-    const ext = isAudio ? "wav" : "webm";
-    const mimeType = isAudio ? "audio/wav" : "video/webm";
+  function attachToDiscord(blob, originalName, isAudio, format) {
+    const isMp4 = !isAudio && format === "mp4";
+    const ext = isAudio ? "wav" : (isMp4 ? "mp4" : "webm");
+    const mimeType = isAudio ? "audio/wav" : (isMp4 ? "video/mp4" : "video/webm");
     const baseName = (originalName || (isAudio ? "audio" : "video")).replace(/\.[^/.]+$/, "");
     const compressedFile = new File([blob], `${baseName}-compressed.${ext}`, { type: mimeType });
     generatedFiles.add(compressedFile);
@@ -127,8 +133,50 @@
     }
   }
 
-  function handleMediaFile(file) {
+  function cancelAll() {
+    fileQueue = [];
+    isQueueRunning = false;
+    queueTotal = 0;
+    queueCurrentIndex = 0;
     stopActiveSession();
+  }
+
+  function enqueueFiles(files) {
+    const list = Array.from(files).filter(
+      (file) => !generatedFiles.has(file) && Compressor.isMediaFile(file) && file.size > Compressor.DISCORD_LIMIT_BYTES
+    );
+    if (list.length === 0) return;
+
+    if (!isQueueRunning) {
+      queueTotal = list.length;
+      queueCurrentIndex = 1;
+      fileQueue = [...list];
+      processNextInQueue();
+    } else {
+      queueTotal += list.length;
+      fileQueue.push(...list);
+    }
+  }
+
+  function processNextInQueue() {
+    if (fileQueue.length === 0) {
+      isQueueRunning = false;
+      queueTotal = 0;
+      queueCurrentIndex = 0;
+      return;
+    }
+
+    isQueueRunning = true;
+    const file = fileQueue.shift();
+    const queueInfo = queueTotal > 1 ? { index: queueCurrentIndex++, total: queueTotal } : null;
+
+    handleMediaFile(file, queueInfo, () => {
+      setTimeout(processNextInQueue, 400);
+    });
+  }
+
+  function handleMediaFile(file, queueInfo, onDone) {
+    stopCleanup();
     const isAudio = Compressor.isAudioFile(file);
 
     function launch(defaults = {}) {
@@ -138,11 +186,12 @@
             onProgress: (percent, status, subtext) => {
               if (activeModal) activeModal.updateProgress(percent, status, subtext);
             },
-            onComplete: (compressedBlob) => {
-              if (activeModal) activeModal.complete(compressedBlob);
-              attachToDiscord(compressedBlob, file.name, isAudio);
+            onComplete: (compressedBlob, format) => {
+              if (activeModal) activeModal.complete(compressedBlob, format);
+              attachToDiscord(compressedBlob, file.name, isAudio, format);
               activeCleanup = null;
               activeModal = null;
+              if (onDone) onDone();
             },
             onError: (err) => {
               if (activeModal) activeModal.error(err);
@@ -154,13 +203,20 @@
 
           activeCleanup = isAudio
             ? Compressor.compressAudio(file, options.targetMB, options.quality, maxDuration, callbacks)
-            : Compressor.compressVideo(file, options.targetMB, options.quality, maxDuration, callbacks, options.hostElement);
+            : Compressor.compressVideo(
+                file,
+                options.targetMB,
+                options.quality,
+                maxDuration,
+                callbacks,
+                options.hostElement,
+                options.format
+              );
         },
         onCancel: () => {
-          stopCleanup();
-          activeModal = null;
+          cancelAll();
         }
-      }, defaults);
+      }, defaults, queueInfo);
     }
 
     loadSavedSettings(launch);
@@ -182,7 +238,7 @@
 
   function teardownListeners() {
     try {
-      stopActiveSession();
+      cancelAll();
       INTERCEPT_EVENTS.forEach((evt) => window.removeEventListener(evt, interceptEvent, { capture: true }));
       window.removeEventListener("dragover", handleDragOver, { capture: true });
       window.removeEventListener("dshrink:teardown", teardownListeners);
@@ -205,25 +261,31 @@
 
   function interceptEvent(e) {
     const files = extractEventFiles(e);
-    if (!files) return false;
+    if (!files || files.length === 0) return false;
 
+    const oversized = [];
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       if (!generatedFiles.has(file) && Compressor.isMediaFile(file) && file.size > Compressor.DISCORD_LIMIT_BYTES) {
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-        if (e.type === "drop") {
-          dismissDiscordDragOverlay(e.target);
-        }
-        if (e.target?.type === "file") {
-          try { e.target.value = ""; } catch (err) {}
-        }
-        handleMediaFile(file);
-        return true;
+        oversized.push(file);
       }
     }
-    return false;
+
+    if (oversized.length === 0) return false;
+
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    if (e.type === "drop") {
+      dismissDiscordDragOverlay(e.target);
+    }
+    if (e.target?.type === "file") {
+      try { e.target.value = ""; } catch (err) {}
+    }
+
+    enqueueFiles(oversized);
+    return true;
   }
 
   loadSavedSettings(() => {});

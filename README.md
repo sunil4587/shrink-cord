@@ -1,7 +1,7 @@
 # ⚡ ShrinkCord
 
 > **Automatically catch oversized videos and audio on Discord Web and shrink them under 20MB right in your browser.**  
-> *100% Client-Side • Zero Cloud Uploads • Open Source (GPLv3) • Zero Telemetry*
+> *100% Client-Side • Universal MP4 & WebM • Batch Processing • Open Source (GPLv3) • Zero Telemetry*
 
 [![Manifest V3](https://img.shields.io/badge/Chrome%20Extension-Manifest%20V3-blue?style=flat-square)](https://developer.chrome.com/docs/extensions/mv3/intro/)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-green.svg?style=flat-square)](LICENSE)
@@ -17,7 +17,7 @@
   <img src="assets/progress.png" alt="ShrinkCord Live Transcoding" width="48%" />
 </p>
 <p align="center">
-  <em>Left: Auto-detection with size &amp; resolution presets • Right: Live client-side transcoding with synchronized AV</em>
+  <em>Left: Auto-detection with size, format &amp; resolution presets • Right: Live client-side transcoding with synchronized AV</em>
 </p>
 
 ---
@@ -32,6 +32,16 @@ You record a gaming clip or audio track on your computer. You drag it into Disco
 2. A 1:1 Discord Nitro-style modal allows shrinking to **19MB** with custom presets.
 3. Compresses video and audio **locally in your browser** at hardware speeds.
 4. **Automatically attaches** the compressed file back into your Discord message box ready to send!
+
+---
+
+## ✨ Features (100% Free & Open Source)
+- **Universal MP4 Export:** Native H.264 MP4 export for seamless inline playback across iPhone/iOS, Android, Mac, and Windows.
+- **Massive File Support:** Effortlessly handles 50MB to 500MB+ videos with adaptive bitrate scaling.
+- **Batch / Queue Processing:** Drop multiple files at once — ShrinkCord queues and compresses them sequentially into your draft.
+- **Discord Stickers & Emojis:** Instant presets for 500 KB (Animated Stickers) and 256 KB (Emojis) with automatic dimension scaling.
+- **Smart Clip Trimming:** One-click presets for 30s, 60s, 2m, or full video transcoding.
+- **Audio Transcoding:** Downsamples voice and studio tracks to fit under Discord limits with clean 32kHz/22kHz WAV.
 
 ---
 
@@ -54,25 +64,17 @@ Until the extension is published on the Chrome Web Store, you can install it loc
 3. Navigate to `chrome://extensions/` in your address bar.
 4. Toggle **"Developer mode"** ON in the top-right corner.
 5. Click **"Load unpacked"** in the top-left corner.
-6. Select the shrink-cord folder.
+6. Select the `shrink-cord` folder.
 7. Open [Discord Web](https://discord.com/app), drag any video or audio file larger than 20MB into a chat, and watch the magic happen!
 
 ---
 
 ## ⚙️ Configuration
-Click the ShrinkCord icon in your Chrome toolbar to customize:
-* **Default Target Size:** `19.0 MB` (Discord Free safe limit), `15.0 MB` (Mobile / WhatsApp), or `8.0 MB` (Legacy).
+Click the ShrinkCord icon in your browser toolbar to customize:
+* **Default Video Format:** `MP4 (Universal)` (best for iPhone & Discord embeds) or `WebM`.
+* **Default Target Size:** `19.0 MB` (Discord Free safe limit), `15.0 MB`, `8.0 MB`, `500 KB (Sticker)`, or `256 KB (Emoji)`.
 * **Default Video Quality:** `1080p FHD` (crisp quality), `720p HD` (balanced), or `480p SD` (compact).
 * **Default Audio Quality:** `Studio (32kHz)`, `High (22kHz)`, or `Voice (Mono)`.
-
----
-
-## 🗺️ Roadmap
-- [x] Manifest V3 content script interception on Discord Web.
-- [x] Native Discord dark-mode styled modal with live preview.
-- [x] Automatic bitrate, sample rate & resolution calculator with WebM duration patching.
-- [ ] Vencord / BetterDiscord plugin port for the standalone Desktop client.
-- [ ] Firefox Add-on release.
 
 ---
 

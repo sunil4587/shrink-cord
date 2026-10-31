@@ -115,23 +115,26 @@
       border-color: #5865f2;
     }
 
-    .footer {
-      padding: 10px 16px;
-      background-color: #2b2d31;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    .features-card {
+      background: rgba(88, 101, 242, 0.12);
+      border: 1px solid rgba(88, 101, 242, 0.28);
+      border-radius: 4px;
+      padding: 8px 10px;
+      font-size: 11.5px;
+      color: #b5bac1;
+      line-height: 1.4;
+      text-align: center;
+    }
+
+    .features-card strong {
+      color: #f2f3f5;
+    }
+
+    .tip-actions {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .link {
-      font-size: 12px;
-      color: #00a8fc;
-      text-decoration: none;
-    }
-
-    .link:hover {
-      text-decoration: underline;
+      flex-direction: column;
+      gap: 7px;
+      margin-top: 2px;
     }
 
     .bmc-button {
@@ -159,13 +162,6 @@
       transform: translateY(0);
     }
 
-    .tip-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 7px;
-      margin-top: 4px;
-    }
-
     .upi-button {
       display: flex;
       align-items: center;
@@ -186,6 +182,25 @@
       background-color: #35373c;
       border-color: #0b72e7;
       color: #ffffff;
+    }
+
+    .footer {
+      padding: 10px 16px;
+      background-color: #2b2d31;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .link {
+      font-size: 12px;
+      color: #00a8fc;
+      text-decoration: none;
+    }
+
+    .link:hover {
+      text-decoration: underline;
     }
 
     .version {
@@ -210,11 +225,21 @@
     </div>
 
     <div class="setting-group">
+      <label class="label" for="default-format">Default Video Format</label>
+      <select id="default-format">
+        <option value="mp4">MP4 (Universal — iPhone, Android &amp; PC)</option>
+        <option value="webm">WebM (Fast &amp; High Compression)</option>
+      </select>
+    </div>
+
+    <div class="setting-group">
       <label class="label" for="default-size">Default Target Size</label>
       <select id="default-size">
         <option value="19.0">19.0 MB — Discord Safe Limit</option>
         <option value="15.0">15.0 MB — Balanced Size</option>
         <option value="8.0">8.0 MB — Legacy Discord Size</option>
+        <option value="0.5">500 KB — Discord Sticker</option>
+        <option value="0.25">256 KB — Discord Emoji</option>
       </select>
     </div>
 
@@ -234,6 +259,11 @@
         <option value="22050">High (22kHz Stereo)</option>
         <option value="voice">Voice (Mono)</option>
       </select>
+    </div>
+
+    <div class="features-card">
+      ✨ <strong>100% Free &amp; Open Source</strong><br/>
+      Universal MP4, Batch Queue &amp; Stickers included.
     </div>
 
     <div class="tip-actions">

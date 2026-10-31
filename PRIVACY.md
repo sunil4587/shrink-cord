@@ -15,7 +15,7 @@ ShrinkCord ("we", "our", or "the extension") is an open-source browser extension
 * Your files **never leave your device**. No media files are ever uploaded to any external server or cloud service.
 
 ### 3. Storage API Usage
-* The `chrome.storage` API is used solely on your local device to save your UI preferences (such as your chosen target file size preset and video resolution preset).
+* The `chrome.storage` API is used solely on your local device to save your UI preferences (such as your chosen target file size preset, format, and video resolution preset).
 * This data remains strictly in your browser and is never synced or shared remotely.
 
 ### 4. Discord Interaction
@@ -27,5 +27,4 @@ ShrinkCord is free and open-source software under the GNU General Public License
 https://github.com/Isaac4096/shrink-cord
 
 ### 6. Contact
-For any questions or privacy inquiries, contact the developer at:  
-`developer.sk4587@gmail.com` or open an issue on [GitHub](https://github.com/Isaac4096/shrink-cord/issues).
+For any questions or privacy inquiries, open an issue on [GitHub Issues](https://github.com/Isaac4096/shrink-cord/issues).

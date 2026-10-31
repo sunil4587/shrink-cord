@@ -17,6 +17,22 @@
   let isQueueRunning = false;
   let queueTotal = 0;
   let queueCurrentIndex = 0;
+  let detectedLimitBytes = Compressor.DISCORD_LIMIT_BYTES;
+  let detectedTier = 0;
+  let suppressNitroUntil = 0;
+
+  window.addEventListener("message", function (event) {
+    if (event.source === window && event.data?.type === "DSHRINK_AUTO_TIER") {
+      if (typeof event.data.maxBytes === "number" && event.data.maxBytes > 0) {
+        detectedLimitBytes = event.data.maxBytes;
+        detectedTier = event.data.premiumType;
+      }
+    }
+  });
+
+  function isOversized(file) {
+    return !generatedFiles.has(file) && Compressor.isMediaFile(file) && file.size > detectedLimitBytes;
+  }
 
   window.dispatchEvent(new CustomEvent("dshrink:teardown"));
 
@@ -153,9 +169,7 @@
   }
 
   function enqueueFiles(files) {
-    const list = Array.from(files).filter(
-      (file) => !generatedFiles.has(file) && Compressor.isMediaFile(file) && file.size > Compressor.DISCORD_LIMIT_BYTES
-    );
+    const list = Array.from(files).filter(isOversized);
     if (list.length === 0) return;
 
     if (!isQueueRunning) {
@@ -213,7 +227,9 @@
           const maxDuration = (options.clip && options.clip !== "full") ? parseFloat(options.clip) : 0;
 
           activeCleanup = isAudio
-            ? Compressor.compressAudio(file, options.targetMB, options.quality, maxDuration, callbacks)
+            ? Compressor.compressAudio(file, options.targetMB, options.quality, maxDuration, callbacks, {
+                audioBoost: options.audioBoost
+              })
             : Compressor.compressVideo(
                 file,
                 options.targetMB,
@@ -221,25 +237,33 @@
                 maxDuration,
                 callbacks,
                 options.hostElement,
-                options.format
+                options.format,
+                {
+                  muteAudio: options.muteAudio,
+                  audioBoost: options.audioBoost
+                }
               );
         },
         onCancel: () => {
           cancelAll();
         }
-      }, defaults, queueInfo);
+      }, defaults, queueInfo, { limitBytes: detectedLimitBytes, tier: detectedTier });
     }
 
     loadSavedSettings(launch);
   }
 
   const nitroShield = new MutationObserver(() => {
+    if (!activeModal && !isQueueRunning && Date.now() > suppressNitroUntil) {
+      return;
+    }
+
     document.querySelectorAll('[role="dialog"], [class*="modal-"], [class*="layer-"]').forEach((dialog) => {
       if (dialog.closest("#dshrink-modal-root") || dialog.id === "dshrink-modal-root" || dialog.classList.contains("dshrink-modal")) {
         return;
       }
       const text = dialog.textContent || "";
-      if (text.includes("exceeds the size limit") || text.includes("max file size is 20MB")) {
+      if (text.includes("exceeds the size limit") || text.includes("max file size is")) {
         const closeBtn = dialog.querySelector('button[aria-label="Close"], [class*="closeButton"], [class*="close-"]');
         if (closeBtn) closeBtn.click();
         else dialog.remove();
@@ -277,12 +301,14 @@
     const oversized = [];
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      if (!generatedFiles.has(file) && Compressor.isMediaFile(file) && file.size > Compressor.DISCORD_LIMIT_BYTES) {
+      if (isOversized(file)) {
         oversized.push(file);
       }
     }
 
     if (oversized.length === 0) return false;
+
+    suppressNitroUntil = Date.now() + 4000;
 
     e.preventDefault();
     e.stopPropagation();

@@ -1,6 +1,6 @@
 /**
  * ShrinkCord - Modern Native Discord UI Component
- * 1:1 Discord Dark Theme modal matching Discord's official design system.
+ * 1:1 Discord Dark Theme modal matching Discord's official rich design system.
  */
 
 (function () {
@@ -65,7 +65,7 @@
       position: relative;
       background: radial-gradient(ellipse 110% 70% at 50% -10%, #262c66 0%, #202225 65%, #1e1f22 100%);
       color: #dbdee1;
-      width: 472px;
+      width: 460px;
       max-width: 92vw;
       border-radius: 16px;
       box-shadow: 0 24px 64px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.08);
@@ -74,7 +74,7 @@
       flex-direction: column;
       animation: dshrink-scale 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       z-index: 10;
-      padding: 24px 24px 20px 24px;
+      padding: 22px 22px 18px 22px;
     }
 
     #dshrink-modal-root .dshrink-close-btn {
@@ -85,8 +85,8 @@
       border: 1px solid rgba(255, 255, 255, 0.1);
       color: #949ba4;
       cursor: pointer;
-      width: 32px;
-      height: 32px;
+      width: 30px;
+      height: 30px;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -118,14 +118,14 @@
       flex-direction: column;
       align-items: center;
       text-align: center;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
 
     #dshrink-modal-root .dshrink-hero-logo-box {
       position: relative;
-      width: 46px;
-      height: 46px;
-      margin: 2px auto 10px auto;
+      width: 44px;
+      height: 44px;
+      margin: 2px auto 8px auto;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -133,8 +133,8 @@
 
     #dshrink-modal-root .dshrink-hero-logo {
       position: relative;
-      width: 46px;
-      height: 46px;
+      width: 44px;
+      height: 44px;
       object-fit: contain;
       filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.45));
     }
@@ -144,48 +144,48 @@
       background: #ffffff;
       color: #111214;
       font-family: var(--font-display, "gg sans", "ABC Ginto Normal", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif) !important;
-      font-size: 10.5px;
+      font-size: 10px;
       font-weight: 700;
       padding: 2.5px 10px;
       border-radius: 999px;
       letter-spacing: 0.6px;
       text-transform: uppercase;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
     }
 
     #dshrink-modal-root .dshrink-title {
       font-family: var(--font-display, "gg sans", "ABC Ginto Normal", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif) !important;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 800;
-      line-height: 26px;
+      line-height: 24px;
       color: #ffffff;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       letter-spacing: -0.015em;
     }
 
     #dshrink-modal-root .dshrink-subtitle {
-      font-size: 13.5px;
-      line-height: 18px;
+      font-size: 13px;
+      line-height: 17px;
       color: #b5bac1;
-      max-width: 380px;
+      max-width: 390px;
     }
 
     #dshrink-modal-root .dshrink-file-card {
       background: rgba(17, 18, 20, 0.7);
       border: 1px solid rgba(255, 255, 255, 0.07);
       border-radius: 10px;
-      padding: 10px 12px;
+      padding: 9px 11px;
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 14px;
+      gap: 11px;
+      margin-bottom: 12px;
     }
 
     #dshrink-modal-root .dshrink-thumb-box {
-      width: 52px;
-      height: 52px;
-      border-radius: 6px;
+      width: 46px;
+      height: 46px;
+      border-radius: 7px;
       background: #111214;
       flex-shrink: 0;
       display: flex;
@@ -220,20 +220,20 @@
     #dshrink-modal-root .dshrink-file-details {
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 4px;
       min-width: 0;
       flex: 1;
     }
 
     #dshrink-modal-root .dshrink-filename-input {
       width: 100%;
-      background: var(--input-background, rgba(0, 0, 0, 0.35));
-      border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.1));
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 6px;
-      color: var(--text-normal, #f2f3f5);
+      color: #f2f3f5;
       font-size: 13px;
       font-weight: 600;
-      padding: 4px 8px;
+      padding: 3px 7px;
       outline: none;
       transition: border-color 0.15s ease, background-color 0.15s ease;
       overflow: hidden;
@@ -242,74 +242,24 @@
     }
 
     #dshrink-modal-root .dshrink-filename-input:focus {
-      border-color: var(--brand-500, #5865f2);
-      background: var(--input-background, rgba(0, 0, 0, 0.5));
+      border-color: #5865f2;
+      background: rgba(0, 0, 0, 0.55);
     }
 
-    #dshrink-modal-root .dshrink-spoiler-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      cursor: pointer;
-      margin-top: 3px;
-      user-select: none;
-      font-size: 11.5px;
-      color: var(--text-muted, #949ba4);
-      transition: color 0.15s ease;
-    }
-
-    #dshrink-modal-root .dshrink-spoiler-label:hover {
-      color: var(--text-normal, #dbdee1);
-    }
-
-    #dshrink-modal-root .dshrink-spoiler-checkbox {
-      position: absolute;
-      opacity: 0;
-      width: 0;
-      height: 0;
-      pointer-events: none;
-    }
-
-    #dshrink-modal-root .dshrink-spoiler-custom-box {
-      width: 15px;
-      height: 15px;
-      border-radius: 4px;
-      border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.2));
-      background: rgba(0, 0, 0, 0.35);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    #dshrink-modal-root .dshrink-spoiler-checkbox:checked + .dshrink-spoiler-custom-box {
-      background: var(--brand-500, #5865f2);
-      border-color: var(--brand-500, #5865f2);
-    }
-
-    #dshrink-modal-root .dshrink-spoiler-checkbox:checked + .dshrink-spoiler-custom-box::after {
-      content: "";
-      display: block;
-      width: 3.5px;
-      height: 7px;
-      border: solid #ffffff;
-      border-width: 0 2px 2px 0;
-      transform: rotate(45deg) translate(-0.5px, -0.5px);
+    #dshrink-modal-root .dshrink-filename-input:disabled {
+      background: transparent;
+      border-color: transparent;
+      color: #949ba4;
+      padding-left: 0;
     }
 
     #dshrink-modal-root .dshrink-file-meta {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       font-size: 11.5px;
       color: #949ba4;
-    }
-
-    #dshrink-modal-root .dshrink-meta-item {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
+      white-space: nowrap;
     }
 
     #dshrink-modal-root .dshrink-meta-dot {
@@ -322,41 +272,24 @@
     }
 
     #dshrink-modal-root .dshrink-overlimit-tag {
+      color: #f0b232;
+      font-weight: 600;
       display: inline-flex;
       align-items: center;
       gap: 3px;
-      color: #f23f43;
-      font-weight: 600;
-      background: rgba(242, 63, 67, 0.12);
-      padding: 1px 5px;
-      border-radius: 3px;
-    }
-
-    #dshrink-modal-root .dshrink-notice {
-      background: rgba(240, 178, 50, 0.1);
-      border: 1px solid rgba(240, 178, 50, 0.25);
-      border-radius: 8px;
-      padding: 8px 12px;
-      font-size: 12px;
-      color: #f0b232;
-      line-height: 16px;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
     }
 
     #dshrink-modal-root .dshrink-options-area {
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      margin-bottom: 18px;
+      gap: 10px;
+      margin-bottom: 14px;
     }
 
     #dshrink-modal-root .dshrink-group {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 5px;
     }
 
     #dshrink-modal-root .dshrink-label {
@@ -376,6 +309,7 @@
       padding: 3px;
       gap: 3px;
       border: 1px solid rgba(255, 255, 255, 0.06);
+      user-select: none;
     }
 
     #dshrink-modal-root .dshrink-segment-glider {
@@ -399,14 +333,13 @@
       color: #949ba4;
       font-size: 12px;
       font-weight: 600;
-      padding: 7px 4px;
+      padding: 6px 4px;
       border-radius: 6px;
       cursor: pointer;
       transition: color 0.15s ease;
       z-index: 2;
       text-align: center;
       white-space: nowrap;
-      user-select: none;
     }
 
     #dshrink-modal-root .dshrink-segment-btn:hover {
@@ -418,6 +351,65 @@
       font-weight: 700;
     }
 
+    #dshrink-modal-root .dshrink-toggles-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 3px 2px 0 2px;
+    }
+
+    #dshrink-modal-root .dshrink-check-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+      user-select: none;
+      font-size: 12px;
+      color: #949ba4;
+      transition: color 0.15s ease;
+    }
+
+    #dshrink-modal-root .dshrink-check-item:hover {
+      color: #dbdee1;
+    }
+
+    #dshrink-modal-root .dshrink-checkbox-hidden {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+      pointer-events: none;
+    }
+
+    #dshrink-modal-root .dshrink-custom-check {
+      width: 15px;
+      height: 15px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(0, 0, 0, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    #dshrink-modal-root .dshrink-checkbox-hidden:checked + .dshrink-custom-check {
+      background: #5865f2;
+      border-color: #5865f2;
+    }
+
+    #dshrink-modal-root .dshrink-checkbox-hidden:checked + .dshrink-custom-check::after {
+      content: "";
+      display: block;
+      width: 3.5px;
+      height: 7px;
+      border: solid #ffffff;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg) translate(-0.5px, -0.5px);
+    }
+
     #dshrink-modal-root .dshrink-progress-card {
       background: rgba(17, 18, 20, 0.85);
       border: 1px solid rgba(88, 101, 242, 0.3);
@@ -426,7 +418,7 @@
       display: none;
       flex-direction: column;
       gap: 10px;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
     }
 
@@ -478,7 +470,7 @@
     }
 
     #dshrink-modal-root .dshrink-tip-row {
-      margin-top: 12px;
+      margin-top: 10px;
       text-align: center;
     }
 
@@ -497,14 +489,9 @@
       text-decoration: underline;
     }
 
-    #dshrink-modal-root .dshrink-tip-dot {
-      color: #4e5058;
-      margin: 0 4px;
-      font-size: 11px;
-    }
-
     #dshrink-modal-root .dshrink-btn-cancel {
       flex: 1;
+      width: 50%;
       background: #35373c;
       color: #ffffff;
       font-size: 14px;
@@ -527,6 +514,7 @@
 
     #dshrink-modal-root .dshrink-btn-primary {
       flex: 1;
+      width: 50%;
       background: #ffffff;
       color: #060607;
       font-family: var(--font-display, "gg sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif) !important;
@@ -578,7 +566,7 @@
     }
 
     @keyframes dshrink-scale {
-      from { transform: scale(0.95); opacity: 0; }
+      from { transform: scale(0.96); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
     }
   `;
@@ -639,33 +627,38 @@
     });
   }
 
-  function openModal(file, callbacks, defaults = {}, queueInfo = null) {
+  function openModal(file, callbacks, defaults = {}, queueInfo = null, tierInfo = null) {
     const Compressor = window.ShrinkCord.Compressor;
     const { PRESETS } = Compressor;
     const isAudio = Compressor.isAudioFile(file);
     const resolved = Compressor.resolveSettings(defaults);
 
-    let selectedSize = resolved.targetMB;
+    const maxLimitBytes = tierInfo?.limitBytes || Compressor.DISCORD_LIMIT_BYTES;
+    const tier = tierInfo?.tier || 0;
+    const limitMB = Math.round(maxLimitBytes / (1024 * 1024));
+
+    let selectedSize = (tier === 1 || tier === 3) ? 48.0 : (resolved.targetMB || 19.0);
     let selectedRes = isAudio ? resolved.audioQuality : resolved.videoQuality;
     let selectedFormat = resolved.format || "mp4";
     let selectedClip = "full";
     let isAborted = false;
     let isEncoding = false;
     let isCompleted = false;
-    let userSelectedClip = false;
     let mediaDuration = 0;
     const safeFileName = escapeHtml(file.name || (isAudio ? "audio" : "video"));
 
     let badgeText = "AUTO-SHRINK";
     if (queueInfo && queueInfo.total > 1) {
-      badgeText = `BATCH COMPRESSION (${queueInfo.index} of ${queueInfo.total})`;
+      badgeText = `QUEUE (${queueInfo.index} of ${queueInfo.total})`;
+    } else if (tier === 2) {
+      badgeText = "NITRO PRO SHRINKS (>500MB)";
+    } else if (tier === 1 || tier === 3) {
+      badgeText = "NITRO BASIC SHRINKS (>50MB)";
     } else if (isAudio) {
       badgeText = "AUDIO AUTO-SHRINK";
     }
 
-    const subtitleText = (queueInfo && queueInfo.total > 1)
-      ? `Queue item ${queueInfo.index} of ${queueInfo.total} • Compress locally to send directly in chat.`
-      : "The max file size is 20MB. Compress locally to send directly in chat.";
+    const subtitleText = `The max file size is ${limitMB}MB. Compress locally to send directly in chat.`;
 
     ensureStylesInjected();
 
@@ -682,7 +675,7 @@
           ${ICONS.close}
         </button>
 
-        <div class="dshrink-hero" id="dshrink-hero">
+        <div class="dshrink-hero">
           <div class="dshrink-hero-logo-box">
             <img class="dshrink-hero-logo" src="${LOGO_URL}" alt="ShrinkCord Logo" />
           </div>
@@ -704,33 +697,26 @@
                 ${ICONS.clock}
                 <span id="dshrink-duration-val">--:--</span>
               </span>
-              <span class="dshrink-meta-dot">•</span>
+              <span class="dshrink-meta-dot">&bull;</span>
               <span class="dshrink-meta-item">
                 ${ICONS.file}
                 <strong class="dshrink-size-val">${Compressor.formatBytes(file.size)}</strong>
               </span>
-              <span class="dshrink-meta-dot">•</span>
+              <span class="dshrink-meta-dot">&bull;</span>
               <span class="dshrink-overlimit-tag">
                 ${ICONS.warn}
-                <span>Over 20MB</span>
+                <span>Over ${limitMB}MB</span>
               </span>
             </div>
-            <label class="dshrink-spoiler-label" title="Wrap media in Discord spoiler blur (SPOILER_)">
-              <input type="checkbox" id="dshrink-spoiler-check" class="dshrink-spoiler-checkbox" />
-              <span class="dshrink-spoiler-custom-box"></span>
-              <span>Mark as Spoiler</span>
-            </label>
           </div>
         </div>
-
-        <div id="dshrink-warn-container" style="display: none;"></div>
 
         <div class="dshrink-options-area" id="dshrink-options-area">
           ${!isAudio ? `
             <div class="dshrink-group" id="dshrink-clip-group" style="display: none;">
               <label class="dshrink-label">Clip Duration</label>
               <div class="dshrink-segment-group" id="dshrink-clip-segments">
-                ${renderSegments(PRESETS.CLIPS, "60")}
+                ${renderSegments(PRESETS.CLIPS, "full")}
               </div>
             </div>
 
@@ -755,6 +741,26 @@
               ${renderSegments(isAudio ? PRESETS.AUDIO_QUALITIES : PRESETS.VIDEO_QUALITIES, selectedRes)}
             </div>
           </div>
+
+          <div class="dshrink-toggles-row">
+            <label class="dshrink-check-item" title="Wrap media in Discord spoiler blur (SPOILER_)">
+              <input type="checkbox" id="dshrink-spoiler-check" class="dshrink-checkbox-hidden" />
+              <span class="dshrink-custom-check"></span>
+              <span>Mark as Spoiler</span>
+            </label>
+            ${!isAudio ? `
+              <label class="dshrink-check-item" title="Strip audio completely for silent clips & crisper video quality">
+                <input type="checkbox" id="dshrink-mute-check" class="dshrink-checkbox-hidden" />
+                <span class="dshrink-custom-check"></span>
+                <span>Mute Audio (GIF)</span>
+              </label>
+            ` : ""}
+            <label class="dshrink-check-item" title="Boost quiet mic and game volume by 2x (+6dB)">
+              <input type="checkbox" id="dshrink-boost-check" class="dshrink-checkbox-hidden" />
+              <span class="dshrink-custom-check"></span>
+              <span>Boost Audio (2x)</span>
+            </label>
+          </div>
         </div>
 
         <div class="dshrink-progress-card" id="dshrink-progress-card">
@@ -778,114 +784,114 @@
 
         <div class="dshrink-tip-row">
           <a href="https://www.buymeacoffee.com/isaac4096" target="_blank" rel="noopener noreferrer" class="dshrink-tip-link">
-            <span>☕</span>
-            <span>Buy me a coffee</span>
-          </a>
-          <span class="dshrink-tip-dot">•</span>
-          <a href="https://rzp.io/rzp/ndplY1j" target="_blank" rel="noopener noreferrer" class="dshrink-tip-link">
-            <span>🇮🇳</span>
-            <span>Tip via UPI</span>
+            ☕ Buy me a coffee
           </a>
         </div>
       </div>
     `;
 
-    const mountPoint = document.getElementById("app-mount") || document.body;
-    mountPoint.appendChild(root);
+    document.body.appendChild(root);
 
+    const closeBtn = root.querySelector("#dshrink-close-x");
     const cancelBtn = root.querySelector("#dshrink-cancel-btn");
-    const closeX = root.querySelector("#dshrink-close-x");
     const backdrop = root.querySelector("#dshrink-backdrop");
     const startBtn = root.querySelector("#dshrink-start-btn");
+    const thumbBox = root.querySelector("#dshrink-thumb-box");
+    const durationVal = root.querySelector("#dshrink-duration-val");
     const optionsArea = root.querySelector("#dshrink-options-area");
     const progressCard = root.querySelector("#dshrink-progress-card");
-    const progressBar = root.querySelector("#dshrink-progress-bar");
     const statusText = root.querySelector("#dshrink-status-text");
     const percentageText = root.querySelector("#dshrink-percentage");
+    const progressBar = root.querySelector("#dshrink-progress-bar");
     const subtextEl = root.querySelector("#dshrink-progress-subtext");
-    const durationVal = root.querySelector("#dshrink-duration-val");
-    const thumbBox = root.querySelector("#dshrink-thumb-box");
-    const thumbCover = root.querySelector("#dshrink-thumb-cover");
-    const warnContainer = root.querySelector("#dshrink-warn-container");
+    const filenameInput = root.querySelector("#dshrink-filename-input");
+    const spoilerCheck = root.querySelector("#dshrink-spoiler-check");
+    const muteCheck = root.querySelector("#dshrink-mute-check");
+    const boostCheck = root.querySelector("#dshrink-boost-check");
     const clipGroup = root.querySelector("#dshrink-clip-group");
-    const fullBtn = root.querySelector("#dshrink-full-btn");
-
-    if (!isAudio) {
-      bindSegments(root.querySelector("#dshrink-clip-segments"), (val) => {
-        userSelectedClip = true;
-        selectedClip = val === "full" ? "full" : parseFloat(val);
-      });
-      bindSegments(root.querySelector("#dshrink-format-segments"), (val) => {
-        selectedFormat = val;
-      });
-    }
-    bindSegments(root.querySelector("#dshrink-size-segments"), (val) => {
-      selectedSize = parseFloat(val);
-    });
-    bindSegments(root.querySelector("#dshrink-res-segments"), (val) => {
-      selectedRes = val;
-    });
-
-    Compressor.probeMedia(file, isAudio).then(({ duration, thumbnailCanvas }) => {
-      if (isAborted) return;
-      mediaDuration = duration;
-      const formatted = Compressor.formatDuration(duration);
-      durationVal.textContent = formatted;
-
-      if (fullBtn) {
-        fullBtn.textContent = `Full (${formatted})`;
-      }
-
-      if (!isAudio) {
-        if (duration > 120 && !isEncoding) {
-          if (clipGroup) clipGroup.style.display = "flex";
-          if (!userSelectedClip) {
-            selectedClip = 60;
-          }
-          warnContainer.style.display = "block";
-          warnContainer.innerHTML = `<div class="dshrink-notice">Long video detected (${formatted}). 60s clip is pre-selected for fast compression.</div>`;
-        }
-        if (thumbnailCanvas && thumbCover) {
-          thumbCover.innerHTML = "";
-          thumbCover.appendChild(thumbnailCanvas);
-        }
-      }
-    });
 
     function close() {
       if (isAborted) return;
       isAborted = true;
-      isEncoding = false;
-      window.removeEventListener("keydown", keyHandler);
       root.remove();
-      if (!isCompleted && callbacks.onCancel) {
-        callbacks.onCancel();
-      }
+      callbacks.onCancel();
     }
 
-    function keyHandler(e) {
-      if (e.key === "Escape") close();
-    }
-
+    closeBtn.addEventListener("click", close);
     cancelBtn.addEventListener("click", close);
-    closeX.addEventListener("click", close);
-    backdrop.addEventListener("click", () => {
-      if (!isEncoding) close();
-    });
-    window.addEventListener("keydown", keyHandler);
+    backdrop.addEventListener("click", close);
 
-    startBtn.addEventListener("click", function () {
+    bindSegments(root.querySelector("#dshrink-size-segments"), (val) => {
+      selectedSize = parseFloat(val);
+    });
+
+    const formatSegments = root.querySelector("#dshrink-format-segments");
+    if (formatSegments) {
+      bindSegments(formatSegments, (val) => {
+        selectedFormat = val;
+      });
+    }
+
+    bindSegments(root.querySelector("#dshrink-res-segments"), (val) => {
+      selectedRes = val;
+    });
+
+    const clipSegments = root.querySelector("#dshrink-clip-segments");
+    if (clipSegments) {
+      bindSegments(clipSegments, (val) => {
+        selectedClip = val;
+      });
+    }
+
+    const metaMedia = document.createElement(isAudio ? "audio" : "video");
+    metaMedia.preload = "metadata";
+    const metaUrl = URL.createObjectURL(file);
+    metaMedia.src = metaUrl;
+
+    metaMedia.onloadedmetadata = () => {
+      mediaDuration = metaMedia.duration;
+      if (durationVal && Number.isFinite(mediaDuration) && mediaDuration > 0) {
+        durationVal.textContent = Compressor.formatDuration(mediaDuration);
+
+        // Only show clip option if video exceeds 60 seconds
+        if (!isAudio && clipGroup && mediaDuration > 60) {
+          clipGroup.style.display = "flex";
+        }
+      }
+
+      if (!isAudio) {
+        metaMedia.currentTime = Math.min(1.0, (mediaDuration || 2) / 2);
+      }
+    };
+
+    if (!isAudio) {
+      metaMedia.onseeked = () => {
+        try {
+          const cvs = document.createElement("canvas");
+          cvs.width = 48;
+          cvs.height = 48;
+          const cx = cvs.getContext("2d");
+          cx.drawImage(metaMedia, 0, 0, 48, 48);
+          const thumbCover = root.querySelector("#dshrink-thumb-cover");
+          if (thumbCover) {
+            thumbCover.innerHTML = "";
+            thumbCover.appendChild(cvs);
+          }
+        } catch (e) {}
+        URL.revokeObjectURL(metaUrl);
+      };
+    }
+
+    startBtn.addEventListener("click", () => {
+      if (isEncoding || isCompleted) return;
       isEncoding = true;
       statusText.style.color = "";
       progressBar.style.width = "0%";
       percentageText.textContent = "0%";
       optionsArea.style.display = "none";
-      warnContainer.style.display = "none";
       progressCard.style.display = "flex";
       startBtn.disabled = true;
-
-      const filenameInput = root.querySelector("#dshrink-filename-input");
-      const spoilerCheck = root.querySelector("#dshrink-spoiler-check");
+      if (filenameInput) filenameInput.disabled = true;
 
       callbacks.onStart({
         targetMB: selectedSize,
@@ -894,34 +900,35 @@
         clip: selectedClip,
         mediaDuration,
         hostElement: thumbBox,
-        customName: filenameInput ? filenameInput.value.trim() : "",
-        isSpoiler: spoilerCheck ? spoilerCheck.checked : false
+        customName: filenameInput ? filenameInput.value : file.name,
+        isSpoiler: Boolean(spoilerCheck && spoilerCheck.checked),
+        muteAudio: Boolean(muteCheck && muteCheck.checked),
+        audioBoost: Boolean(boostCheck && boostCheck.checked)
       });
     });
 
     return {
       updateProgress: (percent, status, subtext) => {
         if (isAborted) return;
-        progressBar.style.width = percent + "%";
-        percentageText.textContent = Math.round(percent) + "%";
+        progressBar.style.width = `${percent}%`;
+        percentageText.textContent = `${percent}%`;
         if (status) statusText.textContent = status;
         if (subtext) subtextEl.textContent = subtext;
       },
       complete: (blob, format) => {
         if (isAborted) return;
-        isEncoding = false;
         isCompleted = true;
-        window.removeEventListener("keydown", keyHandler);
+        isEncoding = false;
         progressBar.style.width = "100%";
         percentageText.textContent = "100%";
-        statusText.textContent = `Attached ${Compressor.formatBytes(blob.size)} to Discord`;
-        subtextEl.textContent = isAudio ? "Audio ready" : `${(format || "media").toUpperCase()} ready`;
+        statusText.textContent = "Done! Compressed successfully";
+        subtextEl.textContent = `Size: ${Compressor.formatBytes(blob.size)} (${format.toUpperCase()}) &bull; Attaching...`;
+
         setTimeout(() => {
           if (!isAborted) {
-            isAborted = true;
             root.remove();
           }
-        }, 350);
+        }, 400);
       },
       error: (err) => {
         if (isAborted) return;
@@ -933,6 +940,7 @@
         subtextEl.textContent = "Adjust settings above and try again.";
         optionsArea.style.display = "flex";
         startBtn.disabled = false;
+        if (filenameInput) filenameInput.disabled = false;
       },
       close
     };

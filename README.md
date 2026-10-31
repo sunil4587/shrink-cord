@@ -37,9 +37,11 @@ You record a gaming clip or audio track on your computer. You drag it into Disco
 
 ## ✨ Features (100% Free & Open Source)
 - **Universal MP4 Export:** Native H.264 MP4 export for seamless inline playback across iPhone/iOS, Android, Mac, and Windows.
+- **Native Spoiler Tagging:** One-click "Mark as Spoiler" toggle automatically instructs Discord to wrap the clip in a spoiler blur layer (`SPOILER_` prefix).
+- **Inline Clip Renaming:** Easily edit and rename your file right in the compression dialog before it gets attached.
 - **Massive File Support:** Effortlessly handles 50MB to 500MB+ videos with adaptive bitrate scaling.
 - **Batch / Queue Processing:** Drop multiple files at once — ShrinkCord queues and compresses them sequentially into your draft.
-- **Discord Stickers & Emojis:** Instant presets for 500 KB (Animated Stickers) and 256 KB (Emojis) with automatic dimension scaling.
+- **Discord Stickers & Emojis:** Instant presets for 500 KB (Stickers - 320x320 1:1 auto-crop) and 256 KB (Emojis - 256x256 1:1 auto-crop).
 - **Smart Clip Trimming:** One-click presets for 30s, 60s, 2m, or full video transcoding.
 - **Audio Transcoding:** Downsamples voice and studio tracks to fit under Discord limits with clean 32kHz/22kHz WAV.
 

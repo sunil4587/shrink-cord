@@ -1,33 +1,32 @@
 /**
- * ShrinkCord - Popup Settings Logic
+ * ShrinkCord - Settings Manager
  */
 
-document.addEventListener("DOMContentLoaded", function () {
-  if (typeof chrome === "undefined" || !chrome.storage || !chrome.storage.local) return;
+(function () {
+  "use strict";
 
-  const bindings = [
-    { id: "default-format", key: "format" },
-    { id: "default-size", key: "targetMB" },
-    { id: "default-quality", key: "quality" },
-    { id: "default-audio-quality", key: "audioQuality" }
-  ];
+  const formatSelect = document.getElementById("default-format");
+  const sizeSelect = document.getElementById("default-size");
+  const qualitySelect = document.getElementById("default-quality");
+  const audioQualitySelect = document.getElementById("default-audio-quality");
 
-  chrome.storage.local.get(bindings.map((b) => b.key), function (items) {
-    try {
-      if (chrome.runtime && chrome.runtime.lastError) return;
-      bindings.forEach(({ id, key }) => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        const val = items && items[key] ? String(items[key]) : "";
-        if (Array.from(el.options).some((opt) => opt.value === val)) {
-          el.value = val;
-        }
-        el.addEventListener("change", function () {
-          try {
-            chrome.storage.local.set({ [key]: el.value });
-          } catch (e) {}
-        });
-      });
-    } catch (e) {}
+  function saveSettings() {
+    chrome.storage.local.set({
+      format: formatSelect.value,
+      targetMB: parseFloat(sizeSelect.value),
+      quality: qualitySelect.value,
+      audioQuality: audioQualitySelect.value
+    });
+  }
+
+  chrome.storage.local.get(["format", "targetMB", "quality", "audioQuality"], (res) => {
+    if (res.format) formatSelect.value = res.format;
+    if (res.targetMB) sizeSelect.value = String(res.targetMB);
+    if (res.quality) qualitySelect.value = res.quality;
+    if (res.audioQuality) audioQualitySelect.value = res.audioQuality;
   });
-});
+
+  [formatSelect, sizeSelect, qualitySelect, audioQualitySelect].forEach((el) => {
+    el.addEventListener("change", saveSettings);
+  });
+})();

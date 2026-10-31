@@ -6,7 +6,7 @@
 [![Manifest V3](https://img.shields.io/badge/Chrome%20Extension-Manifest%20V3-blue?style=flat-square)](https://developer.chrome.com/docs/extensions/mv3/intro/)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-green.svg?style=flat-square)](LICENSE)
 [![Privacy](https://img.shields.io/badge/Privacy-100%25%20Local-success?style=flat-square)](#privacy--security)
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Donate-yellow.svg?style=flat-square&logo=buy-me-a-coffee)](https://www.buymeacoffee.com/sunil4587)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Donate-yellow.svg?style=flat-square&logo=buy-me-a-coffee)](https://www.buymeacoffee.com/isaac4096)
 [![Donate via UPI](https://img.shields.io/badge/Donate-UPI%20%2F%20Razorpay-blue.svg?style=flat-square)](https://rzp.io/rzp/ndplY1j)
 
 <br/>
@@ -80,8 +80,8 @@ Click the ShrinkCord icon in your Chrome toolbar to customize:
 If ShrinkCord saved you from buying Discord Nitro or made sharing clips easier, consider supporting continued development!
 
 <p align="center">
-  <a href="https://www.buymeacoffee.com/sunil4587" target="_blank">
-    <img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=sunil4587&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" alt="Buy Me A Coffee (Global)" />
+  <a href="https://www.buymeacoffee.com/isaac4096" target="_blank">
+    <img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=isaac4096&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" alt="Buy Me A Coffee (Global)" />
   </a>
   <br/><br/>
   <a href="https://rzp.io/rzp/ndplY1j" target="_blank">

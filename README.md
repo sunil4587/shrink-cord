@@ -7,6 +7,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-green.svg?style=flat-square)](LICENSE)
 [![Privacy](https://img.shields.io/badge/Privacy-100%25%20Local-success?style=flat-square)](#privacy--security)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Donate-yellow.svg?style=flat-square&logo=buy-me-a-coffee)](https://www.buymeacoffee.com/sunil4587)
+[![Donate via UPI](https://img.shields.io/badge/Donate-UPI%20%2F%20Razorpay-blue.svg?style=flat-square)](https://rzp.io/rzp/ndplY1j)
 
 <br/>
 
@@ -76,11 +77,15 @@ Click the ShrinkCord icon in your Chrome toolbar to customize:
 ---
 
 ## ☕ Support the Project
-If ShrinkCord saved you from buying Discord Nitro or made sharing clips easier, consider buying me a coffee to support continued development!
+If ShrinkCord saved you from buying Discord Nitro or made sharing clips easier, consider supporting continued development!
 
 <p align="center">
   <a href="https://www.buymeacoffee.com/sunil4587" target="_blank">
-    <img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=sunil4587&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" alt="Buy Me A Coffee" />
+    <img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=sunil4587&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" alt="Buy Me A Coffee (Global)" />
+  </a>
+  <br/><br/>
+  <a href="https://rzp.io/rzp/ndplY1j" target="_blank">
+    <img src="https://img.shields.io/badge/🇮🇳%20Tip%20via%20UPI-Google%20Pay%20%2F%20PhonePe%20%2F%20Paytm-0b72e7?style=for-the-badge" alt="Tip via UPI (India)" />
   </a>
 </p>
 

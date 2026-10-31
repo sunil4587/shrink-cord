@@ -458,6 +458,12 @@
       text-decoration: underline;
     }
 
+    #dshrink-modal-root .dshrink-tip-dot {
+      color: #4e5058;
+      margin: 0 4px;
+      font-size: 11px;
+    }
+
     #dshrink-modal-root .dshrink-btn-cancel {
       flex: 1;
       background: #35373c;
@@ -710,7 +716,12 @@
         <div class="dshrink-tip-row">
           <a href="https://www.buymeacoffee.com/sunil4587" target="_blank" rel="noopener noreferrer" class="dshrink-tip-link">
             <span>☕</span>
-            <span>Support ShrinkCord on Buy Me a Coffee</span>
+            <span>Buy me a coffee</span>
+          </a>
+          <span class="dshrink-tip-dot">•</span>
+          <a href="https://rzp.io/rzp/ndplY1j" target="_blank" rel="noopener noreferrer" class="dshrink-tip-link">
+            <span>🇮🇳</span>
+            <span>Tip via UPI</span>
           </a>
         </div>
       </div>

@@ -8,6 +8,7 @@
 
   const { Compressor, UI } = window.ShrinkCord;
   const INTERCEPT_EVENTS = ["drop", "paste", "change"];
+  const DISCORD_FREE_LIMIT_BYTES = 20 * 1024 * 1024;
   const generatedFiles = new WeakSet();
 
   let cachedSettings = {};
@@ -17,21 +18,15 @@
   let isQueueRunning = false;
   let queueTotal = 0;
   let queueCurrentIndex = 0;
-  let detectedLimitBytes = Compressor.DISCORD_LIMIT_BYTES;
-  let detectedTier = 0;
   let suppressNitroUntil = 0;
 
-  window.addEventListener("message", function (event) {
-    if (event.source === window && event.data?.type === "DSHRINK_AUTO_TIER") {
-      if (typeof event.data.maxBytes === "number" && event.data.maxBytes > 0) {
-        detectedLimitBytes = event.data.maxBytes;
-        detectedTier = event.data.premiumType;
-      }
-    }
-  });
+  function getUploadLimitBytes() {
+    const mb = (cachedSettings && cachedSettings.targetMB > 20) ? cachedSettings.targetMB : 20;
+    return mb * 1024 * 1024;
+  }
 
   function isOversized(file) {
-    return !generatedFiles.has(file) && Compressor.isMediaFile(file) && file.size > detectedLimitBytes;
+    return !generatedFiles.has(file) && Compressor.isMediaFile(file) && file.size > getUploadLimitBytes();
   }
 
   window.dispatchEvent(new CustomEvent("dshrink:teardown"));
@@ -55,17 +50,13 @@
       done(cachedSettings);
     };
 
-    if (!isExtensionValid()) {
+    if (!isExtensionValid() || !chrome?.storage?.local) {
       finish(cachedSettings);
       return;
     }
 
     try {
-      if (!chrome?.storage?.local) {
-        finish(cachedSettings);
-        return;
-      }
-      chrome.storage.local.get(["targetMB", "quality", "audioQuality", "format"], (saved) => {
+      chrome.storage.local.get(["targetMB", "quality", "format"], (saved) => {
         try {
           if (chrome.runtime && chrome.runtime.lastError) {
             finish(cachedSettings);
@@ -96,9 +87,11 @@
     const isMp4 = !isAudio && format === "mp4";
     const ext = isAudio ? "wav" : (isMp4 ? "mp4" : "webm");
     const mimeType = isAudio ? "audio/wav" : (isMp4 ? "video/mp4" : "video/webm");
+
     let name = (customName && customName.trim())
       ? customName.trim()
       : `${(originalName || (isAudio ? "audio" : "video")).replace(/\.[^/.]+$/, "")}-compressed.${ext}`;
+
     const expectedExt = `.${ext}`;
     if (!name.toLowerCase().endsWith(expectedExt)) {
       name = `${name.replace(/\.[^/.]+$/, "")}${expectedExt}`;
@@ -108,6 +101,7 @@
     } else if (!isSpoiler && name.startsWith("SPOILER_")) {
       name = name.replace(/^SPOILER_/, "");
     }
+
     const compressedFile = new File([blob], name, { type: mimeType });
     generatedFiles.add(compressedFile);
 
@@ -247,7 +241,7 @@
         onCancel: () => {
           cancelAll();
         }
-      }, defaults, queueInfo, { limitBytes: detectedLimitBytes, tier: detectedTier });
+      }, defaults, queueInfo);
     }
 
     loadSavedSettings(launch);

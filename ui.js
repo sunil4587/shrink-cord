@@ -627,17 +627,13 @@
     });
   }
 
-  function openModal(file, callbacks, defaults = {}, queueInfo = null, tierInfo = null) {
+  function openModal(file, callbacks, defaults = {}, queueInfo = null) {
     const Compressor = window.ShrinkCord.Compressor;
     const { PRESETS } = Compressor;
     const isAudio = Compressor.isAudioFile(file);
     const resolved = Compressor.resolveSettings(defaults);
 
-    const maxLimitBytes = tierInfo?.limitBytes || Compressor.DISCORD_LIMIT_BYTES;
-    const tier = tierInfo?.tier || 0;
-    const limitMB = Math.round(maxLimitBytes / (1024 * 1024));
-
-    let selectedSize = (tier === 1 || tier === 3) ? 48.0 : (resolved.targetMB || 19.0);
+    let selectedSize = resolved.targetMB || 19.0;
     let selectedRes = isAudio ? resolved.audioQuality : resolved.videoQuality;
     let selectedFormat = resolved.format || "mp4";
     let selectedClip = "full";
@@ -650,15 +646,11 @@
     let badgeText = "AUTO-SHRINK";
     if (queueInfo && queueInfo.total > 1) {
       badgeText = `QUEUE (${queueInfo.index} of ${queueInfo.total})`;
-    } else if (tier === 2) {
-      badgeText = "NITRO PRO SHRINKS (>500MB)";
-    } else if (tier === 1 || tier === 3) {
-      badgeText = "NITRO BASIC SHRINKS (>50MB)";
     } else if (isAudio) {
       badgeText = "AUDIO AUTO-SHRINK";
     }
 
-    const subtitleText = `The max file size is ${limitMB}MB. Compress locally to send directly in chat.`;
+    const subtitleText = "The max file size is 20MB. Compress locally to send directly in chat.";
 
     ensureStylesInjected();
 
@@ -705,7 +697,7 @@
               <span class="dshrink-meta-dot">&bull;</span>
               <span class="dshrink-overlimit-tag">
                 ${ICONS.warn}
-                <span>Over ${limitMB}MB</span>
+                <span>Over 20MB</span>
               </span>
             </div>
           </div>
@@ -853,7 +845,6 @@
       if (durationVal && Number.isFinite(mediaDuration) && mediaDuration > 0) {
         durationVal.textContent = Compressor.formatDuration(mediaDuration);
 
-        // Only show clip option if video exceeds 60 seconds
         if (!isAudio && clipGroup && mediaDuration > 60) {
           clipGroup.style.display = "flex";
         }

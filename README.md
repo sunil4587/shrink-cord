@@ -41,8 +41,8 @@ You record a gaming clip or audio track on your computer. You drag it into Disco
 - **Inline Clip Renaming:** Easily edit and rename your file right in the compression dialog before it gets attached.
 - **Massive File Support:** Effortlessly handles 50MB to 500MB+ videos with adaptive bitrate scaling.
 - **Batch / Queue Processing:** Drop multiple files at once — ShrinkCord queues and compresses them sequentially into your draft.
-- **Discord Stickers & Emojis:** Instant presets for 500 KB (Stickers - 320x320 1:1 auto-crop) and 256 KB (Emojis - 256x256 1:1 auto-crop).
-- **Smart Clip Trimming:** One-click presets for 30s, 60s, 2m, or full video transcoding.
+- **Target Size Presets:** Instant presets for 19 MB (Discord Free safe limit), 48 MB (Nitro Basic), or 8 MB (Compact).
+- **Smart Clip Trimming:** One-click presets for 30s, 60s, or full video transcoding.
 - **Audio Transcoding:** Downsamples voice and studio tracks to fit under Discord limits with clean 32kHz/22kHz WAV.
 
 ---
@@ -54,29 +54,29 @@ You record a gaming clip or audio track on your computer. You drag it into Disco
 
 ---
 
-## 🛠️ Installation (Developer / Unpacked Mode)
+## 🛠️ Quick Installation (30 Seconds)
 
-Until the extension is published on the Chrome Web Store, you can install it locally in **10 seconds**:
+Until ShrinkCord is available on the Chrome Web Store, you can install it in **Google Chrome**, **Brave**, **Microsoft Edge**, or any Chromium-based browser:
 
-1. Clone or download this repository:
-   ```bash
-   git clone https://github.com/Isaac4096/shrink-cord.git
-   ```
-2. Open **Google Chrome**, **Brave**, or **Microsoft Edge**.
-3. Navigate to `chrome://extensions/` in your address bar.
-4. Toggle **"Developer mode"** ON in the top-right corner.
-5. Click **"Load unpacked"** in the top-left corner.
-6. Select the `shrink-cord` folder.
-7. Open [Discord Web](https://discord.com/app), drag any video or audio file larger than 20MB into a chat, and watch the magic happen!
+1. **Download the Extension:**
+   * Download the latest **[`shrinkcord-v1.2.0.zip`](https://github.com/Isaac4096/shrink-cord/releases/latest)** from the [Releases page](https://github.com/Isaac4096/shrink-cord/releases).
+2. **Extract the ZIP:**
+   * Right-click the downloaded `.zip` file and select **Extract All...** to an accessible folder (e.g., `Documents/ShrinkCord`).
+3. **Load into Browser:**
+   * In your browser, open `chrome://extensions/` (or `brave://extensions/`, `edge://extensions/`).
+   * Turn **ON** the **Developer mode** toggle in the top-right corner.
+   * Click the **"Load unpacked"** button in the top-left corner.
+   * Select the extracted folder containing `manifest.json`.
+4. **Done!**
+   * Open [Discord Web](https://discord.com/app), drag and drop any video or audio file larger than 20MB into chat, and let ShrinkCord squeeze it automatically!
 
 ---
 
 ## ⚙️ Configuration
 Click the ShrinkCord icon in your browser toolbar to customize:
 * **Default Video Format:** `MP4 (Universal)` (best for iPhone & Discord embeds) or `WebM`.
-* **Default Target Size:** `19.0 MB` (Discord Free safe limit), `15.0 MB`, `8.0 MB`, `500 KB (Sticker)`, or `256 KB (Emoji)`.
+* **Default Target Size:** `19.0 MB` (Discord Free safe limit), `48.0 MB` (Nitro Basic), or `8.0 MB` (Compact).
 * **Default Video Quality:** `1080p FHD` (crisp quality), `720p HD` (balanced), or `480p SD` (compact).
-* **Default Audio Quality:** `Studio (32kHz)`, `High (22kHz)`, or `Voice (Mono)`.
 
 ---
 
@@ -84,12 +84,12 @@ Click the ShrinkCord icon in your browser toolbar to customize:
 If ShrinkCord saved you from buying Discord Nitro or made sharing clips easier, consider supporting continued development!
 
 <p align="center">
-  <a href="https://www.buymeacoffee.com/isaac4096" target="_blank">
-    <img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=isaac4096&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" alt="Buy Me A Coffee (Global)" />
+  <a href="https://www.buymeacoffee.com/isaac4096" target="_blank" rel="noopener noreferrer">
+    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="42" />
   </a>
-  <br/><br/>
-  <a href="https://rzp.io/rzp/ndplY1j" target="_blank">
-    <img src="https://img.shields.io/badge/🇮🇳%20Tip%20via%20UPI-Google%20Pay%20%2F%20PhonePe%20%2F%20Paytm-0b72e7?style=for-the-badge" alt="Tip via UPI (India)" />
+  &nbsp;&nbsp;
+  <a href="https://rzp.io/rzp/ndplY1j" target="_blank" rel="noopener noreferrer">
+    <img src="https://img.shields.io/badge/%F0%9F%87%AE%F0%9F%87%B3%20Tip%20via%20UPI-Google%20Pay%20%2F%20PhonePe%20%2F%20Paytm-0b72e7?style=for-the-badge" alt="Tip via UPI (India)" height="42" />
   </a>
 </p>
 

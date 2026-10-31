@@ -29,16 +29,6 @@
         "*://*.discord.com/*"
       ],
       "js": [
-        "probe.js"
-      ],
-      "run_at": "document_start",
-      "world": "MAIN"
-    },
-    {
-      "matches": [
-        "*://*.discord.com/*"
-      ],
-      "js": [
         "fix-webm-duration.js",
         "compressor.js",
         "ui.js",

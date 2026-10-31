@@ -5,28 +5,28 @@
 (function () {
   "use strict";
 
-  const formatSelect = document.getElementById("default-format");
-  const sizeSelect = document.getElementById("default-size");
-  const qualitySelect = document.getElementById("default-quality");
-  const audioQualitySelect = document.getElementById("default-audio-quality");
+  const controls = {
+    format: document.getElementById("default-format"),
+    targetMB: document.getElementById("default-size"),
+    quality: document.getElementById("default-quality")
+  };
 
   function saveSettings() {
-    chrome.storage.local.set({
-      format: formatSelect.value,
-      targetMB: parseFloat(sizeSelect.value),
-      quality: qualitySelect.value,
-      audioQuality: audioQualitySelect.value
-    });
+    const payload = {};
+    if (controls.format) payload.format = controls.format.value;
+    if (controls.targetMB) payload.targetMB = parseFloat(controls.targetMB.value);
+    if (controls.quality) payload.quality = controls.quality.value;
+    chrome.storage.local.set(payload);
   }
 
-  chrome.storage.local.get(["format", "targetMB", "quality", "audioQuality"], (res) => {
-    if (res.format) formatSelect.value = res.format;
-    if (res.targetMB) sizeSelect.value = String(res.targetMB);
-    if (res.quality) qualitySelect.value = res.quality;
-    if (res.audioQuality) audioQualitySelect.value = res.audioQuality;
+  chrome.storage.local.get(["format", "targetMB", "quality"], (res) => {
+    if (!res) return;
+    if (res.format && controls.format) controls.format.value = res.format;
+    if (res.targetMB && controls.targetMB) controls.targetMB.value = String(res.targetMB);
+    if (res.quality && controls.quality) controls.quality.value = res.quality;
   });
 
-  [formatSelect, sizeSelect, qualitySelect, audioQualitySelect].forEach((el) => {
-    el.addEventListener("change", saveSettings);
+  Object.values(controls).forEach((el) => {
+    if (el) el.addEventListener("change", saveSettings);
   });
 })();
